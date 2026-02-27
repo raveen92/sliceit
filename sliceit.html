@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SliceIT</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#F4F3EF; --surface:#FFFFFF; --border:#E5E2DB; --text:#18181A; --muted:#8A8680;
+      --lime:#C8F135; --green:#1A6B45; --green-bg:#E6F4EE; --red:#C0392B; --red-bg:#FDECEA;
+      --grey:#6B6B6B; --grey-bg:#EEECE7; --warn-bg:#FFF8E1; --warn-border:#FFD54F; --warn-text:#7A5C00;
+      --radius:16px; --radius-sm:10px;
+      --shadow-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+      --shadow-md:0 4px 14px rgba(0,0,0,.09);
+    }
+    html,body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); }
+    .page { display:none; min-height:100vh; padding-bottom:52px; animation:fadeUp .26s ease; }
+    .page.active { display:block; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes slideIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+    /* Header */
+    .app-header { background:var(--text); padding:16px 18px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+    .logo { display:inline-flex; align-items:center; gap:9px; }
+    .logo-icon { width:32px; height:32px; background:var(--lime); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1rem; }
+    .logo h1 { font-family:'Syne',sans-serif; font-size:1.45rem; font-weight:800; color:#fff; letter-spacing:-1px; }
+    .logo h1 span { color:var(--lime); }
+    .page-dots { display:flex; align-items:center; gap:5px; }
+    .dot { width:20px; height:4px; border-radius:2px; background:rgba(255,255,255,.18); transition:background .3s,width .3s; }
+    .dot.on { background:var(--lime); width:28px; }
+    .btn-back { background:none; border:none; color:rgba(255,255,255,.55); font-family:'DM Sans',sans-serif; font-size:.86rem; font-weight:600; cursor:pointer; padding:6px 10px; border-radius:8px; display:flex; align-items:center; gap:4px; transition:color .15s,background .15s; }
+    .btn-back:hover { color:#fff; background:rgba(255,255,255,.08); }
+
+    /* Totals bar */
+    .totals-bar { position:sticky; top:56px; z-index:90; background:var(--surface); border-bottom:1.5px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,.05); display:flex; }
+    .t-col { flex:1; text-align:center; padding:9px 6px; border-right:1px solid var(--border); }
+    .t-col:last-child { border-right:none; }
+    .t-label { font-size:.64rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--muted); }
+    .t-value { font-family:'Syne',sans-serif; font-size:.92rem; font-weight:800; color:var(--text); margin-top:2px; }
+    .diff-badge { display:inline-block; font-size:.65rem; font-weight:700; padding:2px 7px; border-radius:20px; margin-top:3px; }
+    .diff-badge.ok    { background:var(--green-bg); color:var(--green); }
+    .diff-badge.warn  { background:var(--warn-bg);  color:#905800; }
+    .diff-badge.error { background:var(--red-bg);   color:var(--red); }
+
+    /* Layout */
+    .container { max-width:480px; margin:0 auto; padding:0 16px; }
+    section { margin-top:20px; }
+    .section-label { font-family:'Syne',sans-serif; font-size:.67rem; font-weight:700; letter-spacing:1.6px; text-transform:uppercase; color:var(--muted); margin-bottom:12px; padding-left:2px; }
+
+    /* Event card */
+    .event-card { background:var(--text); border-radius:var(--radius); padding:20px; margin-top:18px; box-shadow:var(--shadow-md); }
+    .event-card .section-label { color:rgba(255,255,255,.38); margin-bottom:14px; }
+    .event-card .form-group label { color:rgba(255,255,255,.5); }
+    .event-card .form-group input { background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.13); color:#fff; }
+    .event-card .form-group input::placeholder { color:rgba(255,255,255,.28); }
+    .event-card .form-group input:focus { border-color:var(--lime); background:rgba(255,255,255,.11); outline:none; }
+    .event-card .form-group input[type="date"]::-webkit-calendar-picker-indicator { filter:invert(1) opacity(.4); cursor:pointer; }
+
+    /* Toolbar */
+    .toolbar { display:flex; gap:8px; margin-bottom:14px; }
+    .btn-tool { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); font-family:'DM Sans',sans-serif; font-size:.82rem; font-weight:600; color:var(--text); cursor:pointer; white-space:nowrap; transition:border-color .15s; }
+    .btn-tool:hover { border-color:var(--text); }
+    .btn-tool.lime  { background:var(--lime); border-color:var(--lime); }
+    .btn-tool.lime:hover { filter:brightness(.96); }
+
+    /* Person cards */
+    .person-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); padding:15px; margin-bottom:12px; box-shadow:var(--shadow-sm); animation:slideIn .22s ease; transition:opacity .2s; }
+    .person-card.excluded { opacity:.48; }
+    .card-header { display:flex; align-items:center; gap:9px; margin-bottom:12px; }
+    .card-number { font-family:'Syne',sans-serif; font-size:.68rem; font-weight:700; color:var(--muted); letter-spacing:.5px; flex:1; }
+    .split-toggle { display:flex; align-items:center; gap:5px; padding:4px 9px; border-radius:20px; border:1.5px solid var(--border); background:var(--bg); cursor:pointer; font-size:.72rem; font-weight:600; color:var(--muted); transition:all .2s; user-select:none; white-space:nowrap; }
+    .split-toggle.on { background:var(--lime); border-color:var(--lime); color:var(--text); }
+    .split-toggle-dot { width:7px; height:7px; border-radius:50%; background:var(--muted); transition:background .2s; }
+    .split-toggle.on .split-toggle-dot { background:var(--text); }
+    .btn-remove { background:none; border:none; cursor:pointer; color:var(--muted); font-size:1rem; padding:4px 7px; border-radius:8px; transition:background .15s,color .15s; }
+    .btn-remove:hover { background:var(--red-bg); color:var(--red); }
+
+    /* Form */
+    .form-group { margin-bottom:10px; }
+    .form-group:last-child { margin-bottom:0; }
+    .form-group label { display:block; font-size:.74rem; font-weight:600; color:var(--muted); margin-bottom:5px; }
+    .form-group input { width:100%; border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:11px 13px; font-family:'DM Sans',sans-serif; font-size:.92rem; color:var(--text); background:var(--bg); outline:none; transition:border-color .2s,background .2s; -webkit-appearance:none; }
+    .form-group input:focus { border-color:var(--text); background:#fff; }
+    .form-group input.auto-filled { border-color:#A8D5B8; background:var(--green-bg); color:var(--green); }
+    .amount-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+    /* Buttons */
+    .btn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:15px; border:none; border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-size:.92rem; font-weight:600; cursor:pointer; transition:transform .12s,filter .15s; }
+    .btn:active { transform:scale(.97); }
+    .btn-secondary { background:var(--surface); border:1.5px dashed var(--border); color:var(--text); }
+    .btn-secondary:hover { border-color:var(--text); }
+    .btn-primary { background:var(--text); color:var(--lime); box-shadow:0 4px 16px rgba(0,0,0,.18); font-size:.98rem; font-weight:700; padding:17px; border-radius:var(--radius); letter-spacing:-.2px; }
+    .btn-primary:hover { filter:brightness(1.1); }
+    .btn-ghost { background:none; border:1.5px solid var(--border); color:var(--muted); }
+    .btn-ghost:hover { border-color:var(--text); color:var(--text); }
+
+    /* Alerts */
+    .alert { border-radius:var(--radius-sm); padding:12px 14px; font-size:.85rem; margin-bottom:12px; line-height:1.5; display:none; }
+    .alert.show { display:block; }
+    .alert-error { background:var(--red-bg); border:1.5px solid #F1948A; color:var(--red); }
+
+    /* Mismatch confirm */
+    #mismatch-confirm { display:none; background:var(--warn-bg); border:1.5px solid var(--warn-border); border-radius:var(--radius-sm); padding:14px; margin-bottom:12px; }
+    #mismatch-msg { font-size:.85rem; color:var(--warn-text); margin-bottom:12px; line-height:1.5; }
+    .confirm-actions { display:flex; gap:8px; }
+    .btn-confirm { flex:1; padding:10px; border:none; border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-size:.85rem; font-weight:700; cursor:pointer; transition:filter .15s; }
+    .btn-confirm.proceed { background:var(--text); color:var(--lime); }
+    .btn-confirm.proceed:hover { filter:brightness(1.1); }
+    .btn-confirm.cancel  { background:var(--surface); border:1.5px solid var(--border); color:var(--muted); }
+    .btn-confirm.cancel:hover  { border-color:var(--text); color:var(--text); }
+
+    /* Results */
+    .event-chip { background:var(--text); color:#fff; border-radius:var(--radius); padding:16px 18px; margin-top:18px; margin-bottom:4px; }
+    .chip-name  { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:800; letter-spacing:-.3px; }
+    .chip-meta  { font-size:.78rem; color:rgba(255,255,255,.42); margin-top:5px; }
+    .chip-meta b { color:var(--lime); font-weight:600; }
+    .stats-bar { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); padding:13px 10px; display:flex; margin-bottom:16px; box-shadow:var(--shadow-sm); }
+    .stat { text-align:center; flex:1; }
+    .stat-value { font-family:'Syne',sans-serif; font-size:1.15rem; font-weight:800; color:var(--text); }
+    .stat-label { font-size:.68rem; color:var(--muted); margin-top:2px; }
+    .stat-divider { width:1px; background:var(--border); }
+    .summary-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); padding:13px 15px; margin-bottom:10px; box-shadow:var(--shadow-sm); display:flex; align-items:center; gap:12px; }
+    .summary-badge { width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:.82rem; font-weight:700; flex-shrink:0; }
+    .badge-green { background:var(--green-bg); color:var(--green); }
+    .badge-red   { background:var(--red-bg);   color:var(--red); }
+    .badge-grey  { background:var(--grey-bg);  color:var(--grey); }
+    .summary-info { flex:1; min-width:0; }
+    .summary-name { font-weight:600; font-size:.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .summary-meta { font-size:.73rem; color:var(--muted); margin-top:2px; }
+    .summary-net  { font-family:'Syne',sans-serif; font-size:.88rem; font-weight:700; text-align:right; white-space:nowrap; }
+    .net-green { color:var(--green); }
+    .net-red   { color:var(--red); }
+    .net-grey  { color:var(--grey); }
+    .txn-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:10px; box-shadow:var(--shadow-sm); display:flex; align-items:center; gap:10px; }
+    .txn-num  { width:24px; height:24px; background:var(--bg); border-radius:6px; display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:.66rem; font-weight:700; color:var(--muted); flex-shrink:0; }
+    .txn-detail { flex:1; }
+    .txn-text { font-size:.86rem; font-weight:500; line-height:1.4; }
+    .txn-text strong { font-weight:700; }
+    .txn-amount { font-family:'Syne',sans-serif; font-weight:700; font-size:.9rem; color:var(--green); white-space:nowrap; }
+    .btn-wa { display:inline-flex; align-items:center; justify-content:center; gap:4px; padding:6px 10px; border-radius:20px; border:none; background:#25D366; color:#fff; font-family:'DM Sans',sans-serif; font-size:.73rem; font-weight:600; cursor:pointer; white-space:nowrap; flex-shrink:0; text-decoration:none; transition:filter .15s,transform .1s; }
+    .btn-wa:hover  { filter:brightness(1.08); }
+    .btn-wa:active { transform:scale(.95); }
+    .share-banner { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); padding:14px 16px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .share-banner-text { font-size:.86rem; font-weight:500; line-height:1.4; }
+    .share-banner-text span { display:block; font-size:.74rem; color:var(--muted); margin-top:2px; }
+    .btn-wa-full { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:15px; border-radius:var(--radius-sm); border:none; background:#25D366; color:#fff; font-family:'DM Sans',sans-serif; font-size:.93rem; font-weight:700; cursor:pointer; margin-top:10px; text-decoration:none; transition:filter .15s,transform .1s; }
+    .btn-wa-full:hover  { filter:brightness(1.06); }
+    .btn-wa-full:active { transform:scale(.98); }
+    .settled-banner { background:var(--green-bg); border:1.5px solid #A8D5B8; border-radius:var(--radius-sm); padding:18px; text-align:center; color:var(--green); font-weight:600; font-size:.93rem; }
+  </style>
+</head>
+<body>
+
+<!-- PAGE 1 -->
+<div class="page active" id="page-1">
+  <header class="app-header">
+    <div class="logo"><div class="logo-icon">&#127829;</div><h1>Slice<span>IT</span></h1></div>
+    <div class="page-dots"><div class="dot on"></div><div class="dot"></div></div>
+  </header>
+
+  <div class="totals-bar">
+    <div class="t-col"><div class="t-label">Total Paid</div><div class="t-value" id="bar-paid">Rs.&nbsp;0</div></div>
+    <div class="t-col"><div class="t-label">Total Consumed</div><div class="t-value" id="bar-consumed">Rs.&nbsp;0</div></div>
+    <div class="t-col"><div class="t-label">Difference</div><div class="t-value" style="padding-top:1px"><span class="diff-badge ok" id="bar-diff-badge">Balanced</span></div></div>
+  </div>
+
+  <div class="container">
+    <div class="event-card">
+      <div class="section-label">Event Details</div>
+      <div class="form-group"><label for="event-name">Event Name</label><input type="text" id="event-name" placeholder="e.g. Galle Trip, Team Dinner" autocomplete="off" /></div>
+      <div class="form-group"><label for="event-date">Date</label><input type="date" id="event-date" /></div>
+    </div>
+
+    <section>
+      <div class="section-label">People &amp; Amounts</div>
+      <div class="toolbar">
+        <button class="btn-tool lime" onclick="applySplitEqually()">&#9878; Split Equally</button>
+        <button class="btn-tool" onclick="clearConsumed()">&#x2715; Clear Split</button>
+      </div>
+      <div id="people-list"></div>
+      <button class="btn btn-secondary" onclick="addPerson()" style="margin-bottom:16px">+ Add Person</button>
+    </section>
+
+    <section style="margin-top:8px">
+      <div id="alert-error" class="alert alert-error"></div>
+      <div id="mismatch-confirm">
+        <div id="mismatch-msg"></div>
+        <div class="confirm-actions">
+          <button class="btn-confirm cancel" onclick="hideMismatchConfirm()">Cancel</button>
+          <button class="btn-confirm proceed" onclick="confirmAndCalculate()">Proceed Anyway</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="calculate()">Calculate Settlement &rarr;</button>
+    </section>
+  </div>
+</div>
+
+<!-- PAGE 2 -->
+<div class="page" id="page-2">
+  <header class="app-header">
+    <button class="btn-back" onclick="goBack()">&larr; Back</button>
+    <div class="page-dots"><div class="dot"></div><div class="dot on"></div></div>
+  </header>
+  <div class="container">
+    <div class="event-chip"><div class="chip-name" id="result-event-name">Settlement</div><div class="chip-meta" id="result-event-meta"></div></div>
+    <section><div class="section-label">Summary</div><div id="summary-list"></div></section>
+    <section>
+      <div class="section-label">Settlement Instructions</div>
+      <div id="stats-bar-wrap"></div>
+      <div id="transactions-list"></div>
+      <div id="share-section"></div>
+    </section>
+    <section>
+      <button class="btn btn-ghost" onclick="goBack()" style="margin-bottom:8px">&larr; Edit Entries</button>
+      <button class="btn btn-ghost" onclick="resetAll()">&#8635; Start Over</button>
+    </section>
+  </div>
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────
+  var personCount      = 0;
+  var displayCount     = 0;
+  var pendingCalculate = null;
+
+  // FIX #1: Dynamic tolerance — max(Rs.500, 3% of totalPaid). Used identically
+  // in both the sticky badge and the calculate gate.
+  function getAllowedBuffer(totalPaid) {
+    return Math.max(500, totalPaid * 0.03);
+  }
+
+  // FIX #3 & #4: Central 2-decimal rounding for all monetary values.
+  function round2(n) { return Math.round(n * 100) / 100; }
+
+  // ── Page navigation ────────────────────────────────────
+  function showPage(n) {
+    document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+    document.getElementById('page-' + n).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'auto' }); // FIX #8: 'auto' not 'instant'
+  }
+  function goBack() { hideAlerts(); hideMismatchConfirm(); showPage(1); }
+
+  // ── Person cards ───────────────────────────────────────
+  function addPerson() {
+    personCount++; displayCount++;
+    var id = personCount, label = displayCount;
+    var card = document.createElement('div');
+    card.className = 'person-card'; card.id = 'person-' + id;
+    card.dataset.includeSplit = 'true';
+    card.innerHTML =
+      '<div class="card-header">' +
+        '<span class="card-number" id="card-label-' + id + '">PERSON ' + label + '</span>' +
+        '<div class="split-toggle on" id="toggle-' + id + '" onclick="toggleSplit(' + id + ')">' +
+          '<div class="split-toggle-dot"></div><span id="toggle-label-' + id + '">In split</span>' +
+        '</div>' +
+        '<button class="btn-remove" onclick="removePerson(' + id + ')">&#x2715;</button>' +
+      '</div>' +
+      '<div class="form-group"><label for="name-' + id + '">Name</label>' +
+        '<input type="text" id="name-' + id + '" placeholder="e.g. Alice" autocomplete="off" oninput="refreshTotals()" /></div>' +
+      '<div class="amount-row">' +
+        '<div class="form-group"><label for="paid-' + id + '">Amount Paid</label>' +
+          // FIX #10: onblur sanitizer clamps negatives
+          '<input type="number" id="paid-' + id + '" placeholder="0" min="0" inputmode="decimal" oninput="refreshTotals()" onblur="sanitizeInput(this)" /></div>' +
+        '<div class="form-group"><label for="consumed-' + id + '">Consumed</label>' +
+          '<input type="number" id="consumed-' + id + '" placeholder="0" min="0" inputmode="decimal" oninput="refreshTotals()" onblur="sanitizeInput(this)" /></div>' +
+      '</div>';
+    document.getElementById('people-list').appendChild(card);
+    refreshTotals();
+  }
+
+  // FIX #10: clamp negatives to 0 at blur
+  function sanitizeInput(el) {
+    var v = parseFloat(el.value);
+    if (!isNaN(v) && v < 0) { el.value = 0; refreshTotals(); }
+  }
+
+  // FIX #6: renumber labels sequentially after removal
+  function removePerson(id) {
+    var el = document.getElementById('person-' + id);
+    if (el) el.remove();
+    renumberCards(); refreshTotals();
+  }
+  function renumberCards() {
+    var cards = document.querySelectorAll('.person-card');
+    displayCount = cards.length;
+    cards.forEach(function(card, i) {
+      var cid = getCardId(card);
+      var lbl = document.getElementById('card-label-' + cid);
+      if (lbl) lbl.textContent = 'PERSON ' + (i + 1);
+    });
+  }
+
+  // FIX #7: call refreshTotals() after toggle
+  function toggleSplit(id) {
+    var card   = document.getElementById('person-' + id);
+    var toggle = document.getElementById('toggle-' + id);
+    var label  = document.getElementById('toggle-label-' + id);
+    var wasIn  = card.dataset.includeSplit === 'true';
+    card.dataset.includeSplit = wasIn ? 'false' : 'true';
+    toggle.classList.toggle('on', !wasIn);
+    card.classList.toggle('excluded', wasIn);
+    label.textContent = wasIn ? 'Out of split' : 'In split';
+    refreshTotals(); // FIX #7
+  }
+
+  function getCardId(card) {
+    var m = card.id.match(/person-(\d+)/); return m ? m[1] : null;
+  }
+
+  // ── Sticky totals bar ──────────────────────────────────
+  // FIX #1: badge uses getAllowedBuffer()
+  // FIX #2 (design): totals count ALL people — "Out of split" only
+  //   affects equal-distribution auto-fill, not net balance accounting.
+  function refreshTotals() {
+    var paid = 0, consumed = 0;
+    document.querySelectorAll('.person-card').forEach(function(card) {
+      var id = getCardId(card);
+      paid     += readValue('paid-' + id);
+      consumed += readValue('consumed-' + id);
+    });
+    document.getElementById('bar-paid').textContent     = fmtBar(paid);
+    document.getElementById('bar-consumed').textContent = fmtBar(consumed);
+    var diff    = Math.abs(paid - consumed);
+    var allowed = getAllowedBuffer(paid);
+    var badge   = document.getElementById('bar-diff-badge');
+    if (diff < 0.01) {
+      badge.textContent = 'Balanced'; badge.className = 'diff-badge ok';
+    } else if (diff <= allowed) {
+      badge.textContent = 'Off ' + fmtBar(diff); badge.className = 'diff-badge warn';
+    } else {
+      badge.textContent = 'Off ' + fmtBar(diff); badge.className = 'diff-badge error';
+    }
+  }
+
+  // ── Equal split ────────────────────────────────────────
+  // FIX #2: only zero previously auto-filled excluded fields
+  // FIX #4: round2() applied to all share arithmetic
+  function applySplitEqually() {
+    var cards = document.querySelectorAll('.person-card');
+    if (!cards.length) { alert('Add people first.'); return; }
+    var totalPaid = 0;
+    cards.forEach(function(c) { totalPaid += readValue('paid-' + getCardId(c)); });
+    if (!totalPaid) { alert('Enter at least one Amount Paid first.'); return; }
+    var included = Array.from(cards).filter(function(c) { return c.dataset.includeSplit === 'true'; });
+    if (!included.length) { alert('At least one person must be in the split.'); return; }
+    var base      = Math.floor((totalPaid / included.length) * 100) / 100;
+    var remainder = round2(totalPaid - base * included.length);
+    included.forEach(function(card, i) {
+      var inp = document.getElementById('consumed-' + getCardId(card));
+      inp.value = round2(i === 0 ? base + remainder : base);
+      inp.classList.add('auto-filled');
+    });
+    Array.from(cards).filter(function(c) { return c.dataset.includeSplit !== 'true'; }).forEach(function(card) {
+      var inp = document.getElementById('consumed-' + getCardId(card));
+      if (inp && inp.classList.contains('auto-filled')) { inp.value = 0; inp.classList.remove('auto-filled'); }
+    });
+    refreshTotals();
+  }
+
+  function clearConsumed() {
+    document.querySelectorAll('.person-card').forEach(function(card) {
+      var inp = document.getElementById('consumed-' + getCardId(card));
+      if (inp) { inp.value = ''; inp.classList.remove('auto-filled'); }
+    });
+    refreshTotals();
+  }
+
+  // ── Data helpers ───────────────────────────────────────
+  // FIX #10: negatives clamped to 0 at read-time (defence in depth)
+  function readValue(elId) {
+    var el = document.getElementById(elId);
+    var v  = el ? parseFloat(el.value) : NaN;
+    return (!isNaN(v) && v > 0) ? v : 0;
+  }
+
+  // FIX #4: net pre-rounded before entering algorithm
+  function getPeople() {
+    var cards = document.querySelectorAll('.person-card');
+    if (!cards.length) { showError('Add at least one person.'); return null; }
+    var people = [];
+    for (var i = 0; i < cards.length; i++) {
+      var id   = getCardId(cards[i]);
+      var nEl  = document.getElementById('name-' + id);
+      var name = nEl ? nEl.value.trim() : '';
+      var paid     = readValue('paid-' + id);
+      var consumed = readValue('consumed-' + id);
+      if (!name) { showError('Enter a name for Person ' + id + '.'); if (nEl) nEl.focus(); return null; }
+      people.push({ name: name, paid: paid, consumed: consumed, net: round2(paid - consumed) });
+    }
+    return people;
+  }
+
+  // ── Settlement algorithm ───────────────────────────────
+  // FIX #3: explicit transfer subtraction (not C.bal += D.bal)
+  // FIX #4: round2() after every balance mutation to prevent drift
+  function computeSettlement(people) {
+    var EPS = 0.01;
+    var creditors = people.filter(function(p) { return p.net > EPS; })
+                          .map(function(p)    { return { name: p.name, bal: p.net }; });
+    var debtors   = people.filter(function(p) { return p.net < -EPS; })
+                          .map(function(p)    { return { name: p.name, bal: p.net }; });
+    creditors.sort(function(a,b) { return b.bal - a.bal; });
+    debtors.sort(  function(a,b) { return a.bal - b.bal; });
+    var txns = [], ci = 0, di = 0;
+    while (ci < creditors.length && di < debtors.length) {
+      var C = creditors[ci], D = debtors[di];
+      var transfer = round2(Math.min(C.bal, -D.bal)); // FIX #3: named, explicit
+      txns.push({ from: D.name, to: C.name, amount: transfer });
+      C.bal = round2(C.bal - transfer); // FIX #3 & #4
+      D.bal = round2(D.bal + transfer); // FIX #3 & #4
+      if (C.bal <  EPS) ci++;
+      if (D.bal > -EPS) di++;
+    }
+    return txns;
+  }
+
+  // ── Mismatch confirm (FIX #11) ─────────────────────────
+  function showMismatchConfirm(people, diff, paid, consumed) {
+    pendingCalculate = people;
+    document.getElementById('mismatch-msg').textContent =
+      'Paid ' + fmt(paid) + ' vs Consumed ' + fmt(consumed) +
+      ' — a difference of ' + fmt(diff) + '. Settlement will use numbers as entered. Proceed anyway?';
+    document.getElementById('mismatch-confirm').style.display = 'block';
+  }
+  function hideMismatchConfirm() {
+    document.getElementById('mismatch-confirm').style.display = 'none';
+    pendingCalculate = null;
+  }
+  function confirmAndCalculate() {
+    if (!pendingCalculate) return;
+    var people = pendingCalculate; hideMismatchConfirm(); renderResults(people);
+  }
+
+  // ── Calculate ──────────────────────────────────────────
+  function calculate() {
+    hideAlerts(); hideMismatchConfirm();
+    var people = getPeople(); if (!people) return;
+    var totalPaid     = round2(people.reduce(function(s,p) { return s+p.paid; }, 0));
+    var totalConsumed = round2(people.reduce(function(s,p) { return s+p.consumed; }, 0));
+    var diff          = round2(Math.abs(totalPaid - totalConsumed));
+    var allowed       = getAllowedBuffer(totalPaid); // FIX #1
+    if (diff > allowed) {
+      showError('Cannot calculate — Paid (' + fmt(totalPaid) + ') vs Consumed (' + fmt(totalConsumed) +
+        ') differ by ' + fmt(diff) + ', exceeding the tolerance of ' + fmt(round2(allowed)) +
+        ' (Rs.\u00A0500 or 3% of total, whichever is greater).');
+      return;
+    }
+    if (diff > 0.01) { showMismatchConfirm(people, diff, totalPaid, totalConsumed); return; } // FIX #11
+    renderResults(people);
+  }
+
+  // ── Render results ─────────────────────────────────────
+  // FIX #5: fmt() always absolute — sign prepended explicitly below
+  function renderResults(people) {
+    var totalPaid = round2(people.reduce(function(s,p) { return s+p.paid; }, 0));
+    var eventName = (document.getElementById('event-name').value||'').trim() || 'Settlement';
+    var eventDate = document.getElementById('event-date').value;
+    document.getElementById('result-event-name').textContent = eventName;
+    var metaEl  = document.getElementById('result-event-meta');
+    var dateStr = eventDate ? fmtDate(eventDate) : '';
+    metaEl.innerHTML = dateStr
+      ? '<b>' + dateStr + '</b> &nbsp;&middot;&nbsp; ' + people.length + ' people &nbsp;&middot;&nbsp; ' + fmt(totalPaid) + ' total'
+      : people.length + ' people &nbsp;&middot;&nbsp; ' + fmt(totalPaid) + ' total';
+
+    var summaryList = document.getElementById('summary-list');
+    summaryList.innerHTML = '';
+    people.forEach(function(p) {
+      var isGreen = p.net > 0.01, isRed = p.net < -0.01;
+      var bc   = isGreen ? 'badge-green' : isRed ? 'badge-red' : 'badge-grey';
+      var nc   = isGreen ? 'net-green'   : isRed ? 'net-red'   : 'net-grey';
+      var icon = isGreen ? '&#8593;' : isRed ? '&#8595;' : '&#10003;';
+      var sign = isGreen ? '+' : isRed ? '-' : ''; // FIX #5: explicit sign
+      var el = document.createElement('div'); el.className = 'summary-card';
+      el.innerHTML =
+        '<div class="summary-badge ' + bc + '">' + icon + '</div>' +
+        '<div class="summary-info"><div class="summary-name">' + esc(p.name) + '</div>' +
+          '<div class="summary-meta">Paid ' + fmt(p.paid) + ' &middot; Used ' + fmt(p.consumed) + '</div></div>' +
+        '<div class="summary-net ' + nc + '">' + sign + fmt(p.net) + '</div>';
+      summaryList.appendChild(el);
+    });
+
+    var txns = computeSettlement(people);
+    var txnList = document.getElementById('transactions-list');
+    var shareEl = document.getElementById('share-section');
+    txnList.innerHTML = ''; shareEl.innerHTML = '';
+
+    document.getElementById('stats-bar-wrap').innerHTML =
+      '<div class="stats-bar">' +
+        '<div class="stat"><div class="stat-value">' + people.length + '</div><div class="stat-label">People</div></div>' +
+        '<div class="stat-divider"></div>' +
+        '<div class="stat"><div class="stat-value">' + txns.length + '</div><div class="stat-label">Transactions</div></div>' +
+        '<div class="stat-divider"></div>' +
+        '<div class="stat"><div class="stat-value">' + fmtCompact(totalPaid) + '</div><div class="stat-label">Total Bill</div></div>' +
+      '</div>';
+
+    if (txns.length === 0) {
+      txnList.innerHTML = '<div class="settled-banner">Everyone is already settled up!</div>';
+    } else {
+      txns.forEach(function(t, i) {
+        var el = document.createElement('div'); el.className = 'txn-card';
+        var url = 'https://wa.me/?text=' + encodeURIComponent(buildSingleWaMsg(t, totalPaid, eventName, eventDate));
+        el.innerHTML =
+          '<div class="txn-num">' + String(i+1).padStart(2,'0') + '</div>' +
+          '<div class="txn-detail"><div class="txn-text"><strong>' + esc(t.from) + '</strong> &rarr; <strong>' + esc(t.to) + '</strong></div></div>' +
+          '<div class="txn-amount">' + fmt(t.amount) + '</div>' +
+          '<a class="btn-wa" href="' + url + '" target="_blank" rel="noopener">' + waIcon(13) + ' Send</a>';
+        txnList.appendChild(el);
+      });
+      var fullUrl = 'https://wa.me/?text=' + encodeURIComponent(buildFullWaMsg(txns, totalPaid, eventName, eventDate));
+      shareEl.innerHTML =
+        '<div class="share-banner"><div class="share-banner-text">Want to share with your friends?' +
+        '<span>Send the full settlement summary to your group</span></div></div>' +
+        '<a class="btn-wa-full" href="' + fullUrl + '" target="_blank" rel="noopener">' + waIcon(16) + ' Share Full Summary on WhatsApp</a>';
+    }
+    showPage(2);
+  }
+
+  // ── Reset ──────────────────────────────────────────────
+  function resetAll() {
+    document.getElementById('people-list').innerHTML   = '';
+    document.getElementById('share-section').innerHTML = '';
+    document.getElementById('event-name').value = '';
+    document.getElementById('event-date').value = '';
+    hideAlerts(); hideMismatchConfirm();
+    personCount = 0; displayCount = 0;
+    addPerson(); addPerson();
+    refreshTotals(); showPage(1);
+  }
+
+  // ── Alerts ─────────────────────────────────────────────
+  function showError(msg) { var el=document.getElementById('alert-error'); el.textContent=msg; el.classList.add('show'); }
+  function hideAlerts()   { document.getElementById('alert-error').classList.remove('show'); }
+
+  // ── Format helpers ─────────────────────────────────────
+  /** fmt() always returns ABSOLUTE value — callers prepend sign (FIX #5) */
+  function fmt(n) {
+    return 'Rs.\u00A0' + Math.abs(n).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:2});
+  }
+  function fmtBar(n) {
+    if (!n) return 'Rs.\u00A00';
+    return 'Rs.\u00A0' + Math.abs(n).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:0});
+  }
+  function fmtCompact(n) {
+    if (n>=100000) return 'Rs.\u00A0'+(n/100000).toFixed(1)+'L';
+    if (n>=1000)   return 'Rs.\u00A0'+(n/1000).toFixed(1)+'K';
+    return fmt(n);
+  }
+  function fmtDate(s) {
+    var d=new Date(s+'T00:00:00');
+    return d.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  }
+  function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  // ── WhatsApp (no emojis, FIX #9 compact) ──────────────
+  function waIcon(sz) {
+    return '<svg viewBox="0 0 32 32" style="width:'+sz+'px;height:'+sz+'px;fill:#fff;flex-shrink:0" aria-hidden="true"><path d="M16 .5C7.44.5.5 7.44.5 16c0 2.83.74 5.48 2.04 7.78L.5 31.5l7.92-2.07A15.45 15.45 0 0016 31.5c8.56 0 15.5-6.94 15.5-15.5S24.56.5 16 .5zm0 28.3a12.73 12.73 0 01-6.48-1.77l-.46-.28-4.7 1.23 1.25-4.57-.3-.47A12.73 12.73 0 013.2 16C3.2 9.47 8.47 4.2 16 4.2S28.8 9.47 28.8 16 23.53 28.8 16 28.8zm6.97-9.53c-.38-.19-2.26-1.11-2.61-1.24-.35-.13-.6-.19-.86.19-.25.38-.98 1.24-1.2 1.49-.22.25-.44.28-.82.09-.38-.19-1.6-.59-3.05-1.88-1.13-1-1.89-2.24-2.11-2.62-.22-.38-.02-.58.17-.77.17-.17.38-.44.57-.66.19-.22.25-.38.38-.63.13-.25.06-.47-.03-.66-.09-.19-.86-2.07-1.18-2.84-.31-.74-.63-.64-.86-.65h-.73c-.25 0-.66.09-1.01.47-.35.38-1.32 1.29-1.32 3.14s1.35 3.64 1.54 3.89c.19.25 2.66 4.06 6.44 5.69.9.39 1.6.62 2.15.79.9.29 1.73.25 2.38.15.73-.11 2.26-.92 2.58-1.81.32-.89.32-1.65.22-1.81-.09-.16-.35-.25-.73-.44z"/></svg>';
+  }
+  function buildSingleWaMsg(t, bill, name, date) {
+    var l = ['*SliceIT - Payment Reminder*','','Hi '+t.from+',','','This is a reminder for the *'+name+'* settlement.'];
+    if (date) l.push('Date: '+fmtDate(date));
+    l.push('','You owe *'+t.to+'* the amount of *'+fmt(t.amount)+'*.','Please settle up at your earliest convenience.','','_(Total bill: '+fmt(bill)+' - Calculated via SliceIT)_');
+    return l.join('\n');
+  }
+  function buildFullWaMsg(txns, bill, name, date) {
+    var l = ['*SliceIT - Settlement Summary*','*'+name+'*'];
+    if (date) l.push('Date: '+fmtDate(date));
+    l.push('Total Bill: *'+fmt(bill)+'*','','*Settlement Instructions*','');
+    txns.forEach(function(t,i) { l.push((i+1)+'. *'+t.from+'* pays *'+t.to+'*  -  '+fmt(t.amount)); });
+    l.push('',txns.length+' transaction'+(txns.length!==1?'s':'')+' required.','_Calculated via SliceIT_');
+    return l.join('\n');
+  }
+
+  // ── Init ───────────────────────────────────────────────
+  addPerson(); addPerson();
+</script>
+</body>
+</html>
