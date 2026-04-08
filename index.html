@@ -4,70 +4,184 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SliceIT</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
   <style>
+    /* ═══════════════════════════════════════════════════
+       TOKENS & RESET
+    ═══════════════════════════════════════════════════ */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg:#F4F3EF; --surface:#FFFFFF; --border:#E5E2DB; --text:#18181A; --muted:#8A8680;
-      --lime:#C8F135; --green:#1A6B45; --green-bg:#E6F4EE; --red:#C0392B; --red-bg:#FDECEA;
-      --grey:#6B6B6B; --grey-bg:#EEECE7; --warn-bg:#FFF8E1; --warn-border:#FFD54F; --warn-text:#7A5C00;
-      --radius:16px; --radius-sm:10px;
-      --shadow-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-      --shadow-md:0 4px 14px rgba(0,0,0,.09);
+      --bg:        #F4F3EF;
+      --surface:   #FFFFFF;
+      --border:    #E5E2DB;
+      --text:      #18181A;
+      --muted:     #8A8680;
+      --lime:      #C8F135;
+      --green:     #1A6B45;
+      --green-bg:  #E6F4EE;
+      --red:       #C0392B;
+      --red-bg:    #FDECEA;
+      --grey:      #6B6B6B;
+      --grey-bg:   #EEECE7;
+      --warn-bg:   #FFF8E1;
+      --warn-bdr:  #FFD54F;
+      --warn-txt:  #7A5C00;
+      --r:         16px;
+      --r-sm:      10px;
+      --sh-sm:     0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+      --sh-md:     0 4px 14px rgba(0,0,0,.09);
     }
-    html,body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); }
-    .page { display:none; min-height:100vh; padding-bottom:52px; animation:fadeUp .26s ease; }
+    html, body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); }
+
+    /* ═══════════════════════════════════════════════════
+       PAGE SYSTEM
+    ═══════════════════════════════════════════════════ */
+    .page { display:none; min-height:100vh; padding-bottom:56px; animation:fadeUp .25s ease; }
     .page.active { display:block; }
-    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-    @keyframes slideIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
 
-    /* Header */
-    .app-header { background:var(--text); padding:16px 18px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
-    .logo { display:inline-flex; align-items:center; gap:9px; }
-    .logo-icon { width:32px; height:32px; background:var(--lime); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1rem; }
-    .logo h1 { font-family:'Syne',sans-serif; font-size:1.45rem; font-weight:800; color:#fff; letter-spacing:-1px; }
+    /* ═══════════════════════════════════════════════════
+       HEADER
+    ═══════════════════════════════════════════════════ */
+    .app-header {
+      background:var(--text); padding:15px 18px;
+      display:flex; align-items:center; justify-content:space-between;
+      position:sticky; top:0; z-index:100;
+    }
+    .logo { display:flex; align-items:center; gap:8px; }
+    .logo-icon { width:30px; height:30px; background:var(--lime); border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:.95rem; }
+    .logo h1 { font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:800; color:#fff; letter-spacing:-1px; }
     .logo h1 span { color:var(--lime); }
-    .page-dots { display:flex; align-items:center; gap:5px; }
-    .dot { width:20px; height:4px; border-radius:2px; background:rgba(255,255,255,.18); transition:background .3s,width .3s; }
-    .dot.on { background:var(--lime); width:28px; }
-    .btn-back { background:none; border:none; color:rgba(255,255,255,.55); font-family:'DM Sans',sans-serif; font-size:.86rem; font-weight:600; cursor:pointer; padding:6px 10px; border-radius:8px; display:flex; align-items:center; gap:4px; transition:color .15s,background .15s; }
+    .page-dots { display:flex; gap:5px; }
+    .dot { width:18px; height:4px; border-radius:2px; background:rgba(255,255,255,.18); transition:all .3s; }
+    .dot.on { background:var(--lime); width:26px; }
+    .btn-back { background:none; border:none; color:rgba(255,255,255,.55); font-family:'DM Sans',sans-serif; font-size:.85rem; font-weight:600; cursor:pointer; padding:6px 10px; border-radius:8px; display:flex; align-items:center; gap:4px; transition:color .15s,background .15s; }
     .btn-back:hover { color:#fff; background:rgba(255,255,255,.08); }
+    .mode-pill { font-size:.68rem; font-weight:700; letter-spacing:.8px; text-transform:uppercase; padding:4px 9px; border-radius:20px; background:rgba(255,255,255,.1); color:rgba(255,255,255,.6); }
+    .mode-pill.trip { background:rgba(200,241,53,.15); color:var(--lime); }
 
-    /* Totals bar */
-    .totals-bar { position:sticky; top:56px; z-index:90; background:var(--surface); border-bottom:1.5px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,.05); display:flex; }
-    .t-col { flex:1; text-align:center; padding:9px 6px; border-right:1px solid var(--border); }
-    .t-col:last-child { border-right:none; }
-    .t-label { font-size:.64rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--muted); }
-    .t-value { font-family:'Syne',sans-serif; font-size:.92rem; font-weight:800; color:var(--text); margin-top:2px; }
-    .diff-badge { display:inline-block; font-size:.65rem; font-weight:700; padding:2px 7px; border-radius:20px; margin-top:3px; }
-    .diff-badge.ok    { background:var(--green-bg); color:var(--green); }
-    .diff-badge.warn  { background:var(--warn-bg);  color:#905800; }
-    .diff-badge.error { background:var(--red-bg);   color:var(--red); }
-
-    /* Layout */
+    /* ═══════════════════════════════════════════════════
+       CONTAINER & TYPOGRAPHY
+    ═══════════════════════════════════════════════════ */
     .container { max-width:480px; margin:0 auto; padding:0 16px; }
     section { margin-top:20px; }
     .section-label { font-family:'Syne',sans-serif; font-size:.67rem; font-weight:700; letter-spacing:1.6px; text-transform:uppercase; color:var(--muted); margin-bottom:12px; padding-left:2px; }
 
-    /* Event card */
-    .event-card { background:var(--text); border-radius:var(--radius); padding:20px; margin-top:18px; box-shadow:var(--shadow-md); }
+    /* ═══════════════════════════════════════════════════
+       LANDING PAGE
+    ═══════════════════════════════════════════════════ */
+    .landing-hero {
+      background:var(--text); padding:48px 20px 40px; text-align:center;
+    }
+    .landing-icon { width:64px; height:64px; background:var(--lime); border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 18px; }
+    .landing-title { font-family:'Syne',sans-serif; font-size:2.2rem; font-weight:800; color:#fff; letter-spacing:-1.5px; line-height:1; }
+    .landing-title span { color:var(--lime); }
+    .landing-sub { font-size:.88rem; color:rgba(255,255,255,.45); margin-top:10px; line-height:1.5; }
+
+    .mode-cards { display:flex; flex-direction:column; gap:14px; margin-top:24px; }
+    .mode-card {
+      background:var(--surface); border:2px solid var(--border); border-radius:var(--r);
+      padding:20px; cursor:pointer; text-align:left;
+      transition:border-color .2s, box-shadow .2s, transform .15s;
+      box-shadow:var(--sh-sm);
+    }
+    .mode-card:hover { border-color:var(--text); box-shadow:var(--sh-md); }
+    .mode-card:active { transform:scale(.98); }
+    .mode-card-icon { font-size:1.5rem; margin-bottom:10px; }
+    .mode-card-title { font-family:'Syne',sans-serif; font-size:1.05rem; font-weight:800; margin-bottom:5px; }
+    .mode-card-desc { font-size:.82rem; color:var(--muted); line-height:1.5; }
+    .mode-card.trip { border-color:var(--lime); }
+    .mode-card.trip .mode-card-title { color:var(--text); }
+    .mode-card-badge { display:inline-block; font-size:.65rem; font-weight:700; letter-spacing:.8px; text-transform:uppercase; padding:2px 8px; border-radius:20px; background:var(--lime); color:var(--text); margin-bottom:8px; }
+
+    /* ═══════════════════════════════════════════════════
+       SHARED FORM STYLES
+    ═══════════════════════════════════════════════════ */
+    .form-group { margin-bottom:10px; }
+    .form-group:last-child { margin-bottom:0; }
+    .form-group label { display:block; font-size:.74rem; font-weight:600; color:var(--muted); margin-bottom:5px; }
+    .form-group input, .form-group select {
+      width:100%; border:1.5px solid var(--border); border-radius:var(--r-sm);
+      padding:11px 13px; font-family:'DM Sans',sans-serif;
+      font-size:.92rem; color:var(--text); background:var(--bg); outline:none;
+      transition:border-color .2s,background .2s; -webkit-appearance:none;
+    }
+    .form-group input:focus, .form-group select:focus { border-color:var(--text); background:#fff; }
+    .form-group select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238A8680' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 13px center; padding-right:36px; }
+
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+
+    .event-card { background:var(--text); border-radius:var(--r); padding:20px; margin-top:18px; box-shadow:var(--sh-md); }
     .event-card .section-label { color:rgba(255,255,255,.38); margin-bottom:14px; }
     .event-card .form-group label { color:rgba(255,255,255,.5); }
     .event-card .form-group input { background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.13); color:#fff; }
     .event-card .form-group input::placeholder { color:rgba(255,255,255,.28); }
     .event-card .form-group input:focus { border-color:var(--lime); background:rgba(255,255,255,.11); outline:none; }
-    .event-card .form-group input[type="date"]::-webkit-calendar-picker-indicator { filter:invert(1) opacity(.4); cursor:pointer; }
+    .event-card input[type="date"]::-webkit-calendar-picker-indicator { filter:invert(1) opacity(.4); cursor:pointer; }
 
-    /* Toolbar */
-    .toolbar { display:flex; gap:8px; margin-bottom:14px; }
-    .btn-tool { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); font-family:'DM Sans',sans-serif; font-size:.82rem; font-weight:600; color:var(--text); cursor:pointer; white-space:nowrap; transition:border-color .15s; }
-    .btn-tool:hover { border-color:var(--text); }
-    .btn-tool.lime  { background:var(--lime); border-color:var(--lime); }
-    .btn-tool.lime:hover { filter:brightness(.96); }
+    /* ═══════════════════════════════════════════════════
+       BUTTONS
+    ═══════════════════════════════════════════════════ */
+    .btn {
+      display:flex; align-items:center; justify-content:center; gap:7px;
+      width:100%; padding:15px; border:none; border-radius:var(--r-sm);
+      font-family:'DM Sans',sans-serif; font-size:.92rem; font-weight:600;
+      cursor:pointer; transition:transform .12s,filter .15s;
+    }
+    .btn:active { transform:scale(.97); }
+    .btn-primary { background:var(--text); color:var(--lime); box-shadow:0 4px 16px rgba(0,0,0,.18); font-size:.98rem; font-weight:700; padding:17px; border-radius:var(--r); letter-spacing:-.2px; }
+    .btn-primary:hover { filter:brightness(1.1); }
+    .btn-secondary { background:var(--surface); border:1.5px dashed var(--border); color:var(--text); }
+    .btn-secondary:hover { border-color:var(--text); }
+    .btn-ghost { background:none; border:1.5px solid var(--border); color:var(--muted); }
+    .btn-ghost:hover { border-color:var(--text); color:var(--text); }
+    .btn-warn { background:var(--warn-bg); border:1.5px solid var(--warn-bdr); color:var(--warn-txt); font-weight:700; padding:15px; border-radius:var(--r); }
+    .btn-warn:hover { filter:brightness(.97); }
+    .btn-sm { padding:8px 14px; font-size:.8rem; border-radius:var(--r-sm); width:auto; }
 
-    /* Person cards */
-    .person-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); padding:15px; margin-bottom:12px; box-shadow:var(--shadow-sm); animation:slideIn .22s ease; transition:opacity .2s; }
+    /* ═══════════════════════════════════════════════════
+       ALERTS
+    ═══════════════════════════════════════════════════ */
+    .alert { border-radius:var(--r-sm); padding:12px 14px; font-size:.84rem; margin-bottom:12px; line-height:1.5; display:none; }
+    .alert.show { display:block; }
+    .alert-warn  { background:var(--warn-bg);  border:1.5px solid var(--warn-bdr); color:var(--warn-txt); }
+    .alert-error { background:var(--red-bg);   border:1.5px solid #F1948A;         color:var(--red); }
+
+    /* ═══════════════════════════════════════════════════
+       MODAL (mismatch confirm)
+    ═══════════════════════════════════════════════════ */
+    .modal-overlay { position:fixed; inset:0; z-index:200; background:rgba(0,0,0,.5); backdrop-filter:blur(2px); display:none; align-items:flex-end; justify-content:center; }
+    .modal-overlay.open { display:flex; }
+    .modal-sheet { background:var(--surface); border-radius:var(--r) var(--r) 0 0; padding:24px 20px 32px; width:100%; max-width:480px; animation:sheetUp .24s ease; }
+    @keyframes sheetUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+    .modal-title { font-family:'Syne',sans-serif; font-size:1rem; font-weight:800; margin-bottom:8px; }
+    .modal-body  { font-size:.87rem; color:var(--muted); line-height:1.55; margin-bottom:20px; }
+    .modal-body b { color:var(--text); font-weight:600; }
+    .modal-actions { display:flex; flex-direction:column; gap:10px; }
+
+    /* ═══════════════════════════════════════════════════
+       SIMPLE MODE — STICKY TOTALS BAR
+    ═══════════════════════════════════════════════════ */
+    .totals-bar { position:sticky; top:56px; z-index:90; background:var(--surface); border-bottom:1.5px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,.05); display:flex; }
+    .t-col { flex:1; text-align:center; padding:9px 6px; border-right:1px solid var(--border); }
+    .t-col:last-child { border-right:none; }
+    .t-label { font-size:.62rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--muted); }
+    .t-value { font-family:'Syne',sans-serif; font-size:.9rem; font-weight:800; color:var(--text); margin-top:2px; }
+    .diff-badge { display:inline-block; font-size:.63rem; font-weight:700; padding:2px 7px; border-radius:20px; margin-top:3px; }
+    .diff-badge.ok    { background:var(--green-bg); color:var(--green); }
+    .diff-badge.warn  { background:var(--warn-bg);  color:#905800; }
+    .diff-badge.error { background:var(--red-bg);   color:var(--red); }
+
+    /* ═══════════════════════════════════════════════════
+       SIMPLE MODE — PERSON CARDS
+    ═══════════════════════════════════════════════════ */
+    .person-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r); padding:15px; margin-bottom:12px; box-shadow:var(--sh-sm); animation:slideIn .22s ease; transition:opacity .2s; }
     .person-card.excluded { opacity:.48; }
+    @keyframes slideIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
     .card-header { display:flex; align-items:center; gap:9px; margin-bottom:12px; }
     .card-number { font-family:'Syne',sans-serif; font-size:.68rem; font-weight:700; color:var(--muted); letter-spacing:.5px; flex:1; }
     .split-toggle { display:flex; align-items:center; gap:5px; padding:4px 9px; border-radius:20px; border:1.5px solid var(--border); background:var(--bg); cursor:pointer; font-size:.72rem; font-weight:600; color:var(--muted); transition:all .2s; user-select:none; white-space:nowrap; }
@@ -76,52 +190,88 @@
     .split-toggle.on .split-toggle-dot { background:var(--text); }
     .btn-remove { background:none; border:none; cursor:pointer; color:var(--muted); font-size:1rem; padding:4px 7px; border-radius:8px; transition:background .15s,color .15s; }
     .btn-remove:hover { background:var(--red-bg); color:var(--red); }
-
-    /* Form */
-    .form-group { margin-bottom:10px; }
-    .form-group:last-child { margin-bottom:0; }
-    .form-group label { display:block; font-size:.74rem; font-weight:600; color:var(--muted); margin-bottom:5px; }
-    .form-group input { width:100%; border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:11px 13px; font-family:'DM Sans',sans-serif; font-size:.92rem; color:var(--text); background:var(--bg); outline:none; transition:border-color .2s,background .2s; -webkit-appearance:none; }
-    .form-group input:focus { border-color:var(--text); background:#fff; }
     .form-group input.auto-filled { border-color:#A8D5B8; background:var(--green-bg); color:var(--green); }
-    .amount-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .toolbar { display:flex; gap:8px; margin-bottom:14px; }
+    .btn-tool { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px 12px; border:1.5px solid var(--border); border-radius:var(--r-sm); background:var(--surface); font-family:'DM Sans',sans-serif; font-size:.82rem; font-weight:600; color:var(--text); cursor:pointer; white-space:nowrap; transition:border-color .15s; }
+    .btn-tool:hover { border-color:var(--text); }
+    .btn-tool.lime { background:var(--lime); border-color:var(--lime); }
+    .btn-tool.lime:hover { filter:brightness(.96); }
 
-    /* Buttons */
-    .btn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:15px; border:none; border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-size:.92rem; font-weight:600; cursor:pointer; transition:transform .12s,filter .15s; }
-    .btn:active { transform:scale(.97); }
-    .btn-secondary { background:var(--surface); border:1.5px dashed var(--border); color:var(--text); }
-    .btn-secondary:hover { border-color:var(--text); }
-    .btn-primary { background:var(--text); color:var(--lime); box-shadow:0 4px 16px rgba(0,0,0,.18); font-size:.98rem; font-weight:700; padding:17px; border-radius:var(--radius); letter-spacing:-.2px; }
-    .btn-primary:hover { filter:brightness(1.1); }
-    .btn-ghost { background:none; border:1.5px solid var(--border); color:var(--muted); }
-    .btn-ghost:hover { border-color:var(--text); color:var(--text); }
+    /* ═══════════════════════════════════════════════════
+       TRIP MODE — MEMBER TAGS
+    ═══════════════════════════════════════════════════ */
+    .member-input-row { display:flex; gap:8px; margin-bottom:10px; }
+    .member-input-row input { flex:1; }
+    .member-tags { display:flex; flex-wrap:wrap; gap:6px; min-height:28px; }
+    .member-tag { display:inline-flex; align-items:center; gap:5px; padding:5px 10px; background:var(--text); color:#fff; border-radius:20px; font-size:.8rem; font-weight:600; }
+    .member-tag .tag-remove { cursor:pointer; color:rgba(255,255,255,.5); font-size:.85rem; line-height:1; transition:color .15s; }
+    .member-tag .tag-remove:hover { color:#fff; }
 
-    /* Alerts */
-    .alert { border-radius:var(--radius-sm); padding:12px 14px; font-size:.85rem; margin-bottom:12px; line-height:1.5; display:none; }
-    .alert.show { display:block; }
-    .alert-error { background:var(--red-bg); border:1.5px solid #F1948A; color:var(--red); }
+    /* ═══════════════════════════════════════════════════
+       TRIP MODE — EXPENSE CARDS
+    ═══════════════════════════════════════════════════ */
+    .trip-totals-bar { position:sticky; top:56px; z-index:90; background:var(--surface); border-bottom:1.5px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,.05); display:flex; }
+    .expense-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r); padding:16px; margin-bottom:12px; box-shadow:var(--sh-sm); animation:slideIn .22s ease; }
+    .expense-card-header { display:flex; align-items:center; gap:9px; margin-bottom:13px; }
+    .expense-num { font-family:'Syne',sans-serif; font-size:.68rem; font-weight:700; color:var(--muted); letter-spacing:.5px; flex:1; }
 
-    /* Mismatch confirm */
-    #mismatch-confirm { display:none; background:var(--warn-bg); border:1.5px solid var(--warn-border); border-radius:var(--radius-sm); padding:14px; margin-bottom:12px; }
-    #mismatch-msg { font-size:.85rem; color:var(--warn-text); margin-bottom:12px; line-height:1.5; }
-    .confirm-actions { display:flex; gap:8px; }
-    .btn-confirm { flex:1; padding:10px; border:none; border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-size:.85rem; font-weight:700; cursor:pointer; transition:filter .15s; }
-    .btn-confirm.proceed { background:var(--text); color:var(--lime); }
-    .btn-confirm.proceed:hover { filter:brightness(1.1); }
-    .btn-confirm.cancel  { background:var(--surface); border:1.5px solid var(--border); color:var(--muted); }
-    .btn-confirm.cancel:hover  { border-color:var(--text); color:var(--text); }
+    /* Checkbox grid for who shares the expense */
+    .share-label { font-size:.74rem; font-weight:600; color:var(--muted); margin-bottom:8px; display:block; }
+    .share-grid { display:flex; flex-wrap:wrap; gap:6px; }
+    .share-chip { display:inline-flex; align-items:center; gap:5px; padding:5px 11px; border-radius:20px; border:1.5px solid var(--border); background:var(--bg); cursor:pointer; font-size:.78rem; font-weight:600; color:var(--muted); user-select:none; transition:all .18s; }
+    .share-chip.checked { background:var(--lime); border-color:var(--lime); color:var(--text); }
+    .share-chip input[type="checkbox"] { display:none; }
 
-    /* Results */
-    .event-chip { background:var(--text); color:#fff; border-radius:var(--radius); padding:16px 18px; margin-top:18px; margin-bottom:4px; }
-    .chip-name  { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:800; letter-spacing:-.3px; }
-    .chip-meta  { font-size:.78rem; color:rgba(255,255,255,.42); margin-top:5px; }
+    /* Quick-select row */
+    .share-quick { display:flex; gap:6px; margin-bottom:8px; }
+    .btn-quick { background:none; border:1px solid var(--border); border-radius:20px; padding:4px 10px; font-family:'DM Sans',sans-serif; font-size:.72rem; font-weight:600; color:var(--muted); cursor:pointer; transition:border-color .15s,color .15s; }
+    .btn-quick:hover { border-color:var(--text); color:var(--text); }
+
+    /* Trip expense summary row in results */
+    .exp-row { display:flex; gap:10px; padding:11px 0; border-bottom:1px solid var(--border); align-items:flex-start; }
+    .exp-row:last-child { border-bottom:none; }
+    .exp-row-info { flex:1; min-width:0; }
+    .exp-row-title { font-size:.87rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .exp-row-meta { font-size:.74rem; color:var(--muted); margin-top:2px; }
+    .exp-row-amount { font-family:'Syne',sans-serif; font-weight:700; font-size:.9rem; white-space:nowrap; }
+    .exp-list-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r); padding:4px 16px; box-shadow:var(--sh-sm); }
+
+    /* ═══════════════════════════════════════════════════
+       TRIP MODE — DATE PICKER CHIPS
+    ═══════════════════════════════════════════════════ */
+    .date-chip-row {
+      display:flex; flex-wrap:wrap; gap:6px; margin-top:2px;
+    }
+    .date-chip {
+      display:inline-flex; align-items:center; gap:4px;
+      padding:5px 11px; border-radius:20px;
+      border:1.5px solid var(--border);
+      background:var(--bg); cursor:pointer;
+      font-size:.75rem; font-weight:600; color:var(--muted);
+      user-select:none; transition:all .18s; white-space:nowrap;
+    }
+    .date-chip:hover { border-color:var(--text); color:var(--text); }
+    .date-chip.selected { background:var(--text); border-color:var(--text); color:#fff; }
+    .date-chip.custom-chip { border-style:dashed; }
+    .date-chip.custom-chip.selected { background:var(--text); border-style:solid; color:#fff; }
+    /* Native date input hidden but triggerable */
+    .hidden-date-input {
+      position:absolute; opacity:0; pointer-events:none; width:0; height:0;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       RESULTS — SHARED STYLES
+    ═══════════════════════════════════════════════════ */
+    .event-chip { background:var(--text); color:#fff; border-radius:var(--r); padding:16px 18px; margin-top:18px; margin-bottom:4px; }
+    .chip-name { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:800; letter-spacing:-.3px; }
+    .chip-meta { font-size:.78rem; color:rgba(255,255,255,.42); margin-top:5px; }
     .chip-meta b { color:var(--lime); font-weight:600; }
-    .stats-bar { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); padding:13px 10px; display:flex; margin-bottom:16px; box-shadow:var(--shadow-sm); }
+    .stats-bar { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r); padding:13px 10px; display:flex; margin-bottom:16px; box-shadow:var(--sh-sm); }
     .stat { text-align:center; flex:1; }
-    .stat-value { font-family:'Syne',sans-serif; font-size:1.15rem; font-weight:800; color:var(--text); }
-    .stat-label { font-size:.68rem; color:var(--muted); margin-top:2px; }
+    .stat-value { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:800; color:var(--text); }
+    .stat-label { font-size:.67rem; color:var(--muted); margin-top:2px; }
     .stat-divider { width:1px; background:var(--border); }
-    .summary-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); padding:13px 15px; margin-bottom:10px; box-shadow:var(--shadow-sm); display:flex; align-items:center; gap:12px; }
+    .summary-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r); padding:13px 15px; margin-bottom:10px; box-shadow:var(--sh-sm); display:flex; align-items:center; gap:12px; }
     .summary-badge { width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:.82rem; font-weight:700; flex-shrink:0; }
     .badge-green { background:var(--green-bg); color:var(--green); }
     .badge-red   { background:var(--red-bg);   color:var(--red); }
@@ -130,450 +280,999 @@
     .summary-name { font-weight:600; font-size:.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .summary-meta { font-size:.73rem; color:var(--muted); margin-top:2px; }
     .summary-net  { font-family:'Syne',sans-serif; font-size:.88rem; font-weight:700; text-align:right; white-space:nowrap; }
-    .net-green { color:var(--green); }
-    .net-red   { color:var(--red); }
-    .net-grey  { color:var(--grey); }
-    .txn-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:10px; box-shadow:var(--shadow-sm); display:flex; align-items:center; gap:10px; }
-    .txn-num  { width:24px; height:24px; background:var(--bg); border-radius:6px; display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:.66rem; font-weight:700; color:var(--muted); flex-shrink:0; }
+    .net-green { color:var(--green); } .net-red { color:var(--red); } .net-grey { color:var(--grey); }
+    .txn-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r-sm); padding:12px 14px; margin-bottom:10px; box-shadow:var(--sh-sm); display:flex; align-items:center; gap:10px; }
+    .txn-num { width:24px; height:24px; background:var(--bg); border-radius:6px; display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:.66rem; font-weight:700; color:var(--muted); flex-shrink:0; }
     .txn-detail { flex:1; }
     .txn-text { font-size:.86rem; font-weight:500; line-height:1.4; }
     .txn-text strong { font-weight:700; }
     .txn-amount { font-family:'Syne',sans-serif; font-weight:700; font-size:.9rem; color:var(--green); white-space:nowrap; }
-    .btn-wa { display:inline-flex; align-items:center; justify-content:center; gap:4px; padding:6px 10px; border-radius:20px; border:none; background:#25D366; color:#fff; font-family:'DM Sans',sans-serif; font-size:.73rem; font-weight:600; cursor:pointer; white-space:nowrap; flex-shrink:0; text-decoration:none; transition:filter .15s,transform .1s; }
-    .btn-wa:hover  { filter:brightness(1.08); }
-    .btn-wa:active { transform:scale(.95); }
-    .share-banner { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); padding:14px 16px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .btn-wa { display:inline-flex; align-items:center; gap:4px; padding:6px 10px; border-radius:20px; border:none; background:#25D366; color:#fff; font-family:'DM Sans',sans-serif; font-size:.73rem; font-weight:600; cursor:pointer; white-space:nowrap; flex-shrink:0; text-decoration:none; transition:filter .15s,transform .1s; }
+    .btn-wa:hover { filter:brightness(1.08); } .btn-wa:active { transform:scale(.95); }
+    .share-banner { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r); padding:14px 16px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .share-banner-text { font-size:.86rem; font-weight:500; line-height:1.4; }
     .share-banner-text span { display:block; font-size:.74rem; color:var(--muted); margin-top:2px; }
-    .btn-wa-full { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:15px; border-radius:var(--radius-sm); border:none; background:#25D366; color:#fff; font-family:'DM Sans',sans-serif; font-size:.93rem; font-weight:700; cursor:pointer; margin-top:10px; text-decoration:none; transition:filter .15s,transform .1s; }
-    .btn-wa-full:hover  { filter:brightness(1.06); }
-    .btn-wa-full:active { transform:scale(.98); }
-    .settled-banner { background:var(--green-bg); border:1.5px solid #A8D5B8; border-radius:var(--radius-sm); padding:18px; text-align:center; color:var(--green); font-weight:600; font-size:.93rem; }
+    .btn-wa-full { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:15px; border-radius:var(--r-sm); border:none; background:#25D366; color:#fff; font-family:'DM Sans',sans-serif; font-size:.93rem; font-weight:700; cursor:pointer; margin-top:10px; text-decoration:none; transition:filter .15s,transform .1s; }
+    .btn-wa-full:hover { filter:brightness(1.06); } .btn-wa-full:active { transform:scale(.98); }
+    .settled-banner { background:var(--green-bg); border:1.5px solid #A8D5B8; border-radius:var(--r-sm); padding:18px; text-align:center; color:var(--green); font-weight:600; font-size:.93rem; }
+    .divider { height:1px; background:var(--border); margin:18px 0; }
+
+    /* Collapsible expense breakdown in results */
+    .collapse-toggle { display:flex; align-items:center; justify-content:space-between; cursor:pointer; padding:10px 0; user-select:none; }
+    .collapse-toggle .ct-label { font-size:.82rem; font-weight:600; color:var(--muted); }
+    .collapse-toggle .ct-arrow { font-size:.75rem; color:var(--muted); transition:transform .2s; }
+    .collapse-toggle.open .ct-arrow { transform:rotate(180deg); }
+    .collapse-body { display:none; }
+    .collapse-body.open { display:block; }
   </style>
 </head>
 <body>
 
-<!-- PAGE 1 -->
-<div class="page active" id="page-1">
+<!-- ═══════════════════════════════════════════════════
+     PAGE 0 — LANDING / MODE SELECT
+═══════════════════════════════════════════════════ -->
+<div class="page active" id="page-landing">
+  <div class="landing-hero">
+    <div class="landing-icon">🍕</div>
+    <div class="landing-title">Slice<span>IT</span></div>
+    <div class="landing-sub">Split bills. Minimize transactions.<br>Track trip expenses.</div>
+  </div>
+  <div class="container">
+    <div class="mode-cards">
+
+      <div class="mode-card" onclick="startSimple()">
+        <div class="mode-card-icon">⚡</div>
+        <div class="mode-card-title">Simple Split</div>
+        <div class="mode-card-desc">Enter how much each person paid and consumed. Instantly calculate who owes whom. Best for quick one-off bills.</div>
+      </div>
+
+      <div class="mode-card trip" onclick="startTrip()">
+        <div class="mode-card-badge">New</div>
+        <div class="mode-card-icon">🧳</div>
+        <div class="mode-card-title">Trip Expenses</div>
+        <div class="mode-card-desc">Log every expense with who paid and who shares it. Perfect for trips, group dinners, and multi-day events with different subgroups.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     SIMPLE MODE — PAGE 1 (Event + People)
+═══════════════════════════════════════════════════ -->
+<div class="page" id="simple-p1">
   <header class="app-header">
-    <div class="logo"><div class="logo-icon">&#127829;</div><h1>Slice<span>IT</span></h1></div>
+    <button class="btn-back" onclick="goLanding()">&larr;</button>
+    <div class="logo"><div class="logo-icon">🍕</div><h1>Slice<span>IT</span></h1></div>
     <div class="page-dots"><div class="dot on"></div><div class="dot"></div></div>
   </header>
 
   <div class="totals-bar">
-    <div class="t-col"><div class="t-label">Total Paid</div><div class="t-value" id="bar-paid">Rs.&nbsp;0</div></div>
-    <div class="t-col"><div class="t-label">Total Consumed</div><div class="t-value" id="bar-consumed">Rs.&nbsp;0</div></div>
-    <div class="t-col"><div class="t-label">Difference</div><div class="t-value" style="padding-top:1px"><span class="diff-badge ok" id="bar-diff-badge">Balanced</span></div></div>
+    <div class="t-col"><div class="t-label">Total Paid</div><div class="t-value" id="s-bar-paid">Rs. 0</div></div>
+    <div class="t-col"><div class="t-label">Total Consumed</div><div class="t-value" id="s-bar-consumed">Rs. 0</div></div>
+    <div class="t-col"><div class="t-label">Difference</div><div class="t-value" style="padding-top:1px"><span class="diff-badge ok" id="s-bar-diff">Balanced</span></div></div>
   </div>
 
   <div class="container">
     <div class="event-card">
       <div class="section-label">Event Details</div>
-      <div class="form-group"><label for="event-name">Event Name</label><input type="text" id="event-name" placeholder="e.g. Galle Trip, Team Dinner" autocomplete="off" /></div>
-      <div class="form-group"><label for="event-date">Date</label><input type="date" id="event-date" /></div>
+      <div class="form-group"><label for="s-event-name">Event Name</label><input type="text" id="s-event-name" placeholder="e.g. Galle Trip" autocomplete="off" /></div>
+      <div class="form-group"><label for="s-event-date">Date</label><input type="date" id="s-event-date" /></div>
     </div>
 
     <section>
       <div class="section-label">People &amp; Amounts</div>
       <div class="toolbar">
-        <button class="btn-tool lime" onclick="applySplitEqually()">&#9878; Split Equally</button>
-        <button class="btn-tool" onclick="clearConsumed()">&#x2715; Clear Split</button>
+        <button class="btn-tool lime" onclick="s_applySplitEqually()">⚖ Split Equally</button>
+        <button class="btn-tool" onclick="s_clearConsumed()">✕ Clear</button>
       </div>
-      <div id="people-list"></div>
-      <button class="btn btn-secondary" onclick="addPerson()" style="margin-bottom:16px">+ Add Person</button>
+      <div id="s-people-list"></div>
+      <button class="btn btn-secondary" onclick="s_addPerson()" style="margin-bottom:16px">+ Add Person</button>
     </section>
 
     <section style="margin-top:8px">
-      <div id="alert-error" class="alert alert-error"></div>
-      <div id="mismatch-confirm">
-        <div id="mismatch-msg"></div>
-        <div class="confirm-actions">
-          <button class="btn-confirm cancel" onclick="hideMismatchConfirm()">Cancel</button>
-          <button class="btn-confirm proceed" onclick="confirmAndCalculate()">Proceed Anyway</button>
-        </div>
-      </div>
-      <button class="btn btn-primary" onclick="calculate()">Calculate Settlement &rarr;</button>
+      <div id="s-alert-error" class="alert alert-error"></div>
+      <button class="btn btn-primary" onclick="s_onCalculate()">Calculate Settlement &rarr;</button>
     </section>
   </div>
 </div>
 
-<!-- PAGE 2 -->
-<div class="page" id="page-2">
+
+<!-- ═══════════════════════════════════════════════════
+     SIMPLE MODE — PAGE 2 (Results)
+═══════════════════════════════════════════════════ -->
+<div class="page" id="simple-p2">
   <header class="app-header">
-    <button class="btn-back" onclick="goBack()">&larr; Back</button>
+    <button class="btn-back" onclick="showPage('simple-p1')">&larr; Back</button>
+    <div class="logo"><div class="logo-icon">🍕</div><h1>Slice<span>IT</span></h1></div>
     <div class="page-dots"><div class="dot"></div><div class="dot on"></div></div>
   </header>
   <div class="container">
-    <div class="event-chip"><div class="chip-name" id="result-event-name">Settlement</div><div class="chip-meta" id="result-event-meta"></div></div>
-    <section><div class="section-label">Summary</div><div id="summary-list"></div></section>
+    <div class="event-chip"><div class="chip-name" id="s-res-name">Settlement</div><div class="chip-meta" id="s-res-meta"></div></div>
+    <section><div class="section-label">Summary</div><div id="s-summary-list"></div></section>
     <section>
       <div class="section-label">Settlement Instructions</div>
-      <div id="stats-bar-wrap"></div>
-      <div id="transactions-list"></div>
-      <div id="share-section"></div>
+      <div id="s-stats-bar"></div>
+      <div id="s-txn-list"></div>
+      <div id="s-share-section"></div>
     </section>
     <section>
-      <button class="btn btn-ghost" onclick="goBack()" style="margin-bottom:8px">&larr; Edit Entries</button>
+      <button class="btn btn-ghost" onclick="showPage('simple-p1')" style="margin-bottom:8px">&larr; Edit Entries</button>
       <button class="btn btn-ghost" onclick="resetAll()">&#8635; Start Over</button>
     </section>
   </div>
 </div>
 
+
+<!-- ═══════════════════════════════════════════════════
+     TRIP MODE — PAGE 1 (Event + Members)
+═══════════════════════════════════════════════════ -->
+<div class="page" id="trip-p1">
+  <header class="app-header">
+    <button class="btn-back" onclick="goLanding()">&larr;</button>
+    <div class="logo"><div class="logo-icon">🍕</div><h1>Slice<span>IT</span></h1></div>
+    <div class="mode-pill trip">Trip</div>
+  </header>
+  <div class="container">
+    <div class="event-card">
+      <div class="section-label">Trip Details</div>
+      <div class="form-group"><label for="t-event-name">Trip Name</label><input type="text" id="t-event-name" placeholder="e.g. Hiriketiya 2026" autocomplete="off" /></div>
+      <div class="two-col">
+        <div class="form-group"><label for="t-event-start">Start Date</label><input type="date" id="t-event-start" onchange="t_rebuildAllDateChips()" /></div>
+        <div class="form-group"><label for="t-event-end">End Date</label><input type="date" id="t-event-end" onchange="t_rebuildAllDateChips()" /></div>
+      </div>
+    </div>
+
+    <section>
+      <div class="section-label">Group Members</div>
+      <div class="member-input-row">
+        <input type="text" id="t-member-input" placeholder="Type a name and press Add" autocomplete="off"
+               onkeydown="if(event.key==='Enter'){t_addMember();}" />
+        <button class="btn btn-sm btn-secondary" onclick="t_addMember()">Add</button>
+      </div>
+      <div class="member-tags" id="t-member-tags"></div>
+    </section>
+
+    <section style="margin-top:24px">
+      <div id="t-p1-alert" class="alert alert-error"></div>
+      <button class="btn btn-primary" onclick="t_goToExpenses()">Next: Add Expenses &rarr;</button>
+    </section>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     TRIP MODE — PAGE 2 (Expenses)
+═══════════════════════════════════════════════════ -->
+<div class="page" id="trip-p2">
+  <header class="app-header">
+    <button class="btn-back" onclick="showPage('trip-p1')">&larr; Back</button>
+    <div class="logo"><div class="logo-icon">🍕</div><h1>Slice<span>IT</span></h1></div>
+    <div class="mode-pill trip">Trip</div>
+  </header>
+
+  <!-- Sticky expense totals bar -->
+  <div class="trip-totals-bar totals-bar">
+    <div class="t-col"><div class="t-label">Expenses</div><div class="t-value" id="t-bar-count">0</div></div>
+    <div class="t-col"><div class="t-label">Total Spent</div><div class="t-value" id="t-bar-total">Rs. 0</div></div>
+    <div class="t-col"><div class="t-label">Per Head (avg)</div><div class="t-value" id="t-bar-perhead">Rs. 0</div></div>
+  </div>
+
+  <div class="container">
+    <section>
+      <div class="section-label">Expense Items</div>
+      <div id="t-expense-list"></div>
+      <button class="btn btn-secondary" onclick="t_addExpense()" style="margin-bottom:16px">+ Add Expense</button>
+    </section>
+    <section style="margin-top:8px">
+      <div id="t-p2-alert" class="alert alert-error"></div>
+      <button class="btn btn-primary" onclick="t_calculate()">Calculate Settlement &rarr;</button>
+    </section>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     TRIP MODE — PAGE 3 (Results)
+═══════════════════════════════════════════════════ -->
+<div class="page" id="trip-p3">
+  <header class="app-header">
+    <button class="btn-back" onclick="showPage('trip-p2')">&larr; Back</button>
+    <div class="logo"><div class="logo-icon">🍕</div><h1>Slice<span>IT</span></h1></div>
+    <div class="mode-pill trip">Trip</div>
+  </header>
+  <div class="container">
+    <div class="event-chip"><div class="chip-name" id="t-res-name">Trip</div><div class="chip-meta" id="t-res-meta"></div></div>
+
+    <!-- Expense breakdown (collapsible) -->
+    <section>
+      <div class="section-label">Expense Breakdown</div>
+      <div class="exp-list-card" id="t-exp-breakdown"></div>
+    </section>
+
+    <!-- Per-person summary -->
+    <section><div class="section-label">Per Person Summary</div><div id="t-summary-list"></div></section>
+
+    <!-- Settlement instructions -->
+    <section>
+      <div class="section-label">Settlement Instructions</div>
+      <div id="t-stats-bar"></div>
+      <div id="t-txn-list"></div>
+      <div id="t-share-section"></div>
+    </section>
+
+    <section>
+      <button class="btn btn-ghost" onclick="showPage('trip-p2')" style="margin-bottom:8px">&larr; Edit Expenses</button>
+      <button class="btn btn-ghost" onclick="resetAll()">&#8635; Start Over</button>
+    </section>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     SHARED MODAL
+═══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="mismatch-modal" onclick="onModalOverlay(event)">
+  <div class="modal-sheet">
+    <div class="modal-title">Minor Mismatch Detected</div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn btn-warn" onclick="onProceedAnyway()">Proceed Anyway</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Go Back &amp; Fix</button>
+    </div>
+  </div>
+</div>
+
+
 <script>
-  // ── State ──────────────────────────────────────────────
-  var personCount      = 0;
-  var displayCount     = 0;
-  var pendingCalculate = null;
+/* ═══════════════════════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════════════════════ */
 
-  // FIX #1: Dynamic tolerance — max(Rs.500, 3% of totalPaid). Used identically
-  // in both the sticky badge and the calculate gate.
-  function getAllowedBuffer(totalPaid) {
-    return Math.max(500, totalPaid * 0.03);
+const round2 = n => Math.round(n * 100) / 100;
+
+function getAllowedBuffer(total) {
+  return Math.max(500, total * 0.03);
+}
+
+function fmt(n) {
+  return 'Rs.\u00A0' + Math.abs(n).toLocaleString('en-IN', { minimumFractionDigits:0, maximumFractionDigits:2 });
+}
+function fmtBar(n) {
+  if (n === 0) return 'Rs.\u00A00';
+  return 'Rs.\u00A0' + round2(Math.abs(n)).toLocaleString('en-IN', { minimumFractionDigits:0, maximumFractionDigits:0 });
+}
+function fmtCompact(n) {
+  n = Math.abs(n);
+  if (n >= 100000) return 'Rs.\u00A0' + (n/100000).toFixed(1) + 'L';
+  if (n >= 1000)   return 'Rs.\u00A0' + (n/1000).toFixed(1) + 'K';
+  return fmt(n);
+}
+function fmtDate(s) {
+  const d = new Date(s + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+/* ─── Page navigation ─── */
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top:0, behavior:'auto' });
+}
+function goLanding() { showPage('page-landing'); }
+function resetAll() {
+  closeModal();
+  s_reset();
+  t_reset();
+  showPage('page-landing');
+}
+
+/* ─── Modal ─── */
+let pendingCalc = null;
+function openModal(body, cb) {
+  document.getElementById('modal-body').innerHTML = body;
+  pendingCalc = cb;
+  document.getElementById('mismatch-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('mismatch-modal').classList.remove('open');
+  pendingCalc = null;
+}
+function onModalOverlay(e) { if (e.target.id === 'mismatch-modal') closeModal(); }
+function onProceedAnyway() {
+  document.getElementById('mismatch-modal').classList.remove('open');
+  if (pendingCalc) { pendingCalc(); pendingCalc = null; }
+}
+
+/* ─── Settlement algorithm ─── */
+function computeSettlement(people) {
+  const EPS = 0.01;
+  const creditors = people.filter(p => p.net >  EPS).map(p => ({ name:p.name, balance:round2(p.net) }));
+  const debtors   = people.filter(p => p.net < -EPS).map(p => ({ name:p.name, balance:round2(p.net) }));
+  creditors.sort((a,b) => b.balance - a.balance);
+  debtors.sort(  (a,b) => a.balance - b.balance);
+  const txns = [];
+  let ci = 0, di = 0;
+  while (ci < creditors.length && di < debtors.length) {
+    const C = creditors[ci], D = debtors[di];
+    const transfer = round2(Math.min(C.balance, -D.balance));
+    txns.push({ from:D.name, to:C.name, amount:transfer });
+    C.balance = round2(C.balance - transfer);
+    D.balance = round2(D.balance + transfer);
+    if (C.balance <= EPS) ci++;
+    if (Math.abs(D.balance) <= EPS) di++;
+  }
+  return txns;
+}
+
+/* ─── Shared results renderer ─── */
+function renderResults({ people, totalPaid, eventName, eventMeta, summaryListId, statsBarId, txnListId, shareSecId, resNameId, resMetaId, waEventName, waEventDate }) {
+  document.getElementById(resNameId).textContent = eventName;
+  document.getElementById(resMetaId).innerHTML   = eventMeta;
+
+  // Summary
+  const sl = document.getElementById(summaryListId);
+  sl.innerHTML = '';
+  for (const p of people) {
+    const isGreen = p.net >  0.01, isRed = p.net < -0.01;
+    const bc = isGreen ? 'badge-green' : isRed ? 'badge-red' : 'badge-grey';
+    const nc = isGreen ? 'net-green'   : isRed ? 'net-red'   : 'net-grey';
+    const icon = isGreen ? '&#8593;' : isRed ? '&#8595;' : '&#10003;';
+    const sign = isGreen ? '+' : isRed ? '&minus;' : '';
+    const el = document.createElement('div');
+    el.className = 'summary-card';
+    el.innerHTML = `
+      <div class="summary-badge ${bc}">${icon}</div>
+      <div class="summary-info">
+        <div class="summary-name">${esc(p.name)}</div>
+        <div class="summary-meta">Paid ${fmt(p.paid)} &middot; Share ${fmt(p.consumed)}</div>
+      </div>
+      <div class="summary-net ${nc}">${sign}${fmt(Math.abs(p.net))}</div>`;
+    sl.appendChild(el);
   }
 
-  // FIX #3 & #4: Central 2-decimal rounding for all monetary values.
-  function round2(n) { return Math.round(n * 100) / 100; }
+  // Transactions
+  const txns = computeSettlement(people);
+  document.getElementById(statsBarId).innerHTML = `
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-value">${people.length}</div><div class="stat-label">People</div></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><div class="stat-value">${txns.length}</div><div class="stat-label">Transactions</div></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><div class="stat-value">${fmtCompact(totalPaid)}</div><div class="stat-label">Total Bill</div></div>
+    </div>`;
 
-  // ── Page navigation ────────────────────────────────────
-  function showPage(n) {
-    document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
-    document.getElementById('page-' + n).classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'auto' }); // FIX #8: 'auto' not 'instant'
-  }
-  function goBack() { hideAlerts(); hideMismatchConfirm(); showPage(1); }
+  const tl = document.getElementById(txnListId);
+  const ss = document.getElementById(shareSecId);
+  tl.innerHTML = ''; ss.innerHTML = '';
 
-  // ── Person cards ───────────────────────────────────────
-  function addPerson() {
-    personCount++; displayCount++;
-    var id = personCount, label = displayCount;
-    var card = document.createElement('div');
-    card.className = 'person-card'; card.id = 'person-' + id;
-    card.dataset.includeSplit = 'true';
-    card.innerHTML =
-      '<div class="card-header">' +
-        '<span class="card-number" id="card-label-' + id + '">PERSON ' + label + '</span>' +
-        '<div class="split-toggle on" id="toggle-' + id + '" onclick="toggleSplit(' + id + ')">' +
-          '<div class="split-toggle-dot"></div><span id="toggle-label-' + id + '">In split</span>' +
-        '</div>' +
-        '<button class="btn-remove" onclick="removePerson(' + id + ')">&#x2715;</button>' +
-      '</div>' +
-      '<div class="form-group"><label for="name-' + id + '">Name</label>' +
-        '<input type="text" id="name-' + id + '" placeholder="e.g. Alice" autocomplete="off" oninput="refreshTotals()" /></div>' +
-      '<div class="amount-row">' +
-        '<div class="form-group"><label for="paid-' + id + '">Amount Paid</label>' +
-          // FIX #10: onblur sanitizer clamps negatives
-          '<input type="number" id="paid-' + id + '" placeholder="0" min="0" inputmode="decimal" oninput="refreshTotals()" onblur="sanitizeInput(this)" /></div>' +
-        '<div class="form-group"><label for="consumed-' + id + '">Consumed</label>' +
-          '<input type="number" id="consumed-' + id + '" placeholder="0" min="0" inputmode="decimal" oninput="refreshTotals()" onblur="sanitizeInput(this)" /></div>' +
-      '</div>';
-    document.getElementById('people-list').appendChild(card);
-    refreshTotals();
-  }
-
-  // FIX #10: clamp negatives to 0 at blur
-  function sanitizeInput(el) {
-    var v = parseFloat(el.value);
-    if (!isNaN(v) && v < 0) { el.value = 0; refreshTotals(); }
-  }
-
-  // FIX #6: renumber labels sequentially after removal
-  function removePerson(id) {
-    var el = document.getElementById('person-' + id);
-    if (el) el.remove();
-    renumberCards(); refreshTotals();
-  }
-  function renumberCards() {
-    var cards = document.querySelectorAll('.person-card');
-    displayCount = cards.length;
-    cards.forEach(function(card, i) {
-      var cid = getCardId(card);
-      var lbl = document.getElementById('card-label-' + cid);
-      if (lbl) lbl.textContent = 'PERSON ' + (i + 1);
+  if (!txns.length) {
+    tl.innerHTML = `<div class="settled-banner">Everyone is already settled up!</div>`;
+  } else {
+    txns.forEach((t,i) => {
+      const el = document.createElement('div');
+      el.className = 'txn-card';
+      const url = 'https://wa.me/?text=' + encodeURIComponent(buildSingleWaMsg(t, totalPaid, waEventName, waEventDate));
+      el.innerHTML = `
+        <div class="txn-num">${String(i+1).padStart(2,'0')}</div>
+        <div class="txn-detail"><div class="txn-text"><strong>${esc(t.from)}</strong> &rarr; <strong>${esc(t.to)}</strong></div></div>
+        <div class="txn-amount">${fmt(t.amount)}</div>
+        <a class="btn-wa" href="${url}" target="_blank" rel="noopener">${waIcon()} Send</a>`;
+      tl.appendChild(el);
     });
+    const fullUrl = 'https://wa.me/?text=' + encodeURIComponent(buildFullWaMsg(txns, totalPaid, waEventName, waEventDate));
+    ss.innerHTML = `
+      <div class="share-banner">
+        <div class="share-banner-text">Want to share with your friends?<span>Send the full summary to your group</span></div>
+      </div>
+      <a class="btn-wa-full" href="${fullUrl}" target="_blank" rel="noopener">${waIcon(16)} Share Full Summary on WhatsApp</a>`;
   }
+}
 
-  // FIX #7: call refreshTotals() after toggle
-  function toggleSplit(id) {
-    var card   = document.getElementById('person-' + id);
-    var toggle = document.getElementById('toggle-' + id);
-    var label  = document.getElementById('toggle-label-' + id);
-    var wasIn  = card.dataset.includeSplit === 'true';
-    card.dataset.includeSplit = wasIn ? 'false' : 'true';
-    toggle.classList.toggle('on', !wasIn);
-    card.classList.toggle('excluded', wasIn);
-    label.textContent = wasIn ? 'Out of split' : 'In split';
-    refreshTotals(); // FIX #7
+/* ─── WhatsApp helpers ─── */
+function waIcon(size=13) {
+  return `<svg viewBox="0 0 32 32" style="width:${size}px;height:${size}px;fill:#fff;flex-shrink:0" aria-hidden="true"><path d="M16 .5C7.44.5.5 7.44.5 16c0 2.83.74 5.48 2.04 7.78L.5 31.5l7.92-2.07A15.45 15.45 0 0016 31.5c8.56 0 15.5-6.94 15.5-15.5S24.56.5 16 .5zm0 28.3a12.73 12.73 0 01-6.48-1.77l-.46-.28-4.7 1.23 1.25-4.57-.3-.47A12.73 12.73 0 013.2 16C3.2 9.47 8.47 4.2 16 4.2S28.8 9.47 28.8 16 23.53 28.8 16 28.8zm6.97-9.53c-.38-.19-2.26-1.11-2.61-1.24-.35-.13-.6-.19-.86.19-.25.38-.98 1.24-1.2 1.49-.22.25-.44.28-.82.09-.38-.19-1.6-.59-3.05-1.88-1.13-1-1.89-2.24-2.11-2.62-.22-.38-.02-.58.17-.77.17-.17.38-.44.57-.66.19-.22.25-.38.38-.63.13-.25.06-.47-.03-.66-.09-.19-.86-2.07-1.18-2.84-.31-.74-.63-.64-.86-.65h-.73c-.25 0-.66.09-1.01.47-.35.38-1.32 1.29-1.32 3.14s1.35 3.64 1.54 3.89c.19.25 2.66 4.06 6.44 5.69.9.39 1.6.62 2.15.79.9.29 1.73.25 2.38.15.73-.11 2.26-.92 2.58-1.81.32-.89.32-1.65.22-1.81-.09-.16-.35-.25-.73-.44z"/></svg>`;
+}
+function buildSingleWaMsg(txn, total, eventName, eventDate) {
+  const lines = [`*SliceIT - Payment Reminder*`,``,`Hi ${txn.from},`,``,`This is a reminder for the *${eventName}* settlement.`];
+  if (eventDate) lines.push(`Date: ${fmtDate(eventDate)}`);
+  lines.push(``,`You owe *${txn.to}* the amount of *${fmt(txn.amount)}*.`,`Please settle up at your earliest convenience.`,``,`_(Total bill: ${fmt(total)} - Calculated via SliceIT)_`);
+  return lines.join('\n');
+}
+function buildFullWaMsg(txns, total, eventName, eventDate) {
+  const lines = [`*SliceIT - Settlement Summary*`,`*${eventName}*`];
+  if (eventDate) lines.push(`Date: ${fmtDate(eventDate)}`);
+  lines.push(`Total Bill: *${fmt(total)}*`,``,`*Settlement Instructions*`,``);
+  txns.forEach((t,i) => lines.push(`${i+1}. *${t.from}* pays *${t.to}*  -  ${fmt(t.amount)}`));
+  lines.push(``,`${txns.length} transaction${txns.length!==1?'s':''} required to settle the bill.`,`_Calculated via SliceIT_`);
+  return lines.join('\n');
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   SIMPLE MODE
+═══════════════════════════════════════════════════════════ */
+
+let s_personCount = 0;
+
+function startSimple() {
+  showPage('simple-p1');
+  if (!document.querySelector('#s-people-list .person-card')) {
+    s_addPerson(); s_addPerson();
   }
+}
 
-  function getCardId(card) {
-    var m = card.id.match(/person-(\d+)/); return m ? m[1] : null;
+function s_reset() {
+  document.getElementById('s-people-list').innerHTML = '';
+  document.getElementById('s-share-section').innerHTML = '';
+  document.getElementById('s-event-name').value = '';
+  document.getElementById('s-event-date').value = '';
+  document.getElementById('s-alert-error').classList.remove('show');
+  s_personCount = 0;
+}
+
+function s_addPerson() {
+  s_personCount++;
+  const id = s_personCount;
+  const card = document.createElement('div');
+  card.className = 'person-card'; card.id = `sp-${id}`; card.dataset.includeSplit = 'true';
+  card.innerHTML = `
+    <div class="card-header">
+      <span class="card-number" id="sp-num-${id}">PERSON ${id}</span>
+      <div class="split-toggle on" id="sp-tog-${id}" onclick="s_toggleSplit(${id})">
+        <div class="split-toggle-dot"></div>
+        <span id="sp-tog-lbl-${id}">In split</span>
+      </div>
+      <button class="btn-remove" onclick="s_removePerson(${id})">&#x2715;</button>
+    </div>
+    <div class="form-group"><label for="sp-name-${id}">Name</label>
+      <input type="text" id="sp-name-${id}" placeholder="e.g. Alice" autocomplete="off" oninput="s_refreshTotals()" />
+    </div>
+    <div class="two-col">
+      <div class="form-group"><label for="sp-paid-${id}">Amount Paid</label>
+        <input type="number" id="sp-paid-${id}" placeholder="0" min="0" step="any" inputmode="decimal" oninput="s_refreshTotals()" />
+      </div>
+      <div class="form-group"><label for="sp-cons-${id}">Consumed</label>
+        <input type="number" id="sp-cons-${id}" placeholder="0" min="0" step="any" inputmode="decimal" oninput="s_refreshTotals()" />
+      </div>
+    </div>`;
+  document.getElementById('s-people-list').appendChild(card);
+  s_refreshTotals();
+}
+
+function s_removePerson(id) {
+  document.getElementById(`sp-${id}`)?.remove();
+  s_renumber(); s_refreshTotals();
+}
+function s_renumber() {
+  document.querySelectorAll('#s-people-list .person-card').forEach((c,i) => {
+    const id = c.id.replace('sp-','');
+    const el = document.getElementById(`sp-num-${id}`);
+    if (el) el.textContent = `PERSON ${i+1}`;
+  });
+}
+function s_getCardId(card) { return card.id.replace('sp-',''); }
+
+function s_toggleSplit(id) {
+  const card = document.getElementById(`sp-${id}`);
+  const tog  = document.getElementById(`sp-tog-${id}`);
+  const lbl  = document.getElementById(`sp-tog-lbl-${id}`);
+  const wasIn = card.dataset.includeSplit === 'true';
+  card.dataset.includeSplit = wasIn ? 'false' : 'true';
+  tog.classList.toggle('on', !wasIn);
+  card.classList.toggle('excluded', wasIn);
+  lbl.textContent = wasIn ? 'Out of split' : 'In split';
+  s_refreshTotals();
+}
+
+function s_refreshTotals() {
+  let paid = 0, consumed = 0;
+  document.querySelectorAll('#s-people-list .person-card').forEach(card => {
+    const id = s_getCardId(card);
+    paid     += round2(Math.max(0, parseFloat(document.getElementById(`sp-paid-${id}`)?.value) || 0));
+    consumed += round2(Math.max(0, parseFloat(document.getElementById(`sp-cons-${id}`)?.value) || 0));
+  });
+  paid = round2(paid); consumed = round2(consumed);
+  const diff = round2(Math.abs(paid - consumed));
+  const buf  = getAllowedBuffer(paid);
+  document.getElementById('s-bar-paid').textContent     = fmtBar(paid);
+  document.getElementById('s-bar-consumed').textContent = fmtBar(consumed);
+  const badge = document.getElementById('s-bar-diff');
+  if (diff === 0)       { badge.textContent = 'Balanced'; badge.className = 'diff-badge ok'; }
+  else if (diff <= buf) { badge.textContent = `Off ${fmtBar(diff)}`; badge.className = 'diff-badge warn'; }
+  else                  { badge.textContent = `Off ${fmtBar(diff)}`; badge.className = 'diff-badge error'; }
+}
+
+function s_applySplitEqually() {
+  const cards = document.querySelectorAll('#s-people-list .person-card');
+  if (!cards.length) { alert('Add people first.'); return; }
+  let totalPaid = 0;
+  cards.forEach(c => { const id = s_getCardId(c); totalPaid += round2(Math.max(0, parseFloat(document.getElementById(`sp-paid-${id}`)?.value)||0)); });
+  totalPaid = round2(totalPaid);
+  if (!totalPaid) { alert('Enter at least one Amount Paid first.'); return; }
+  const included = [...cards].filter(c => c.dataset.includeSplit === 'true');
+  if (!included.length) { alert('At least one person must be in the split.'); return; }
+  const n = included.length;
+  const share = round2(Math.floor((totalPaid/n)*100)/100);
+  const first = round2(totalPaid - share*(n-1));
+  included.forEach((c,i) => { const id = s_getCardId(c); const inp = document.getElementById(`sp-cons-${id}`); inp.value = i===0?first:share; inp.classList.add('auto-filled'); });
+  [...cards].filter(c => c.dataset.includeSplit !== 'true').forEach(c => { const id = s_getCardId(c); const inp = document.getElementById(`sp-cons-${id}`); inp.value=0; inp.classList.remove('auto-filled'); });
+  s_refreshTotals();
+}
+
+function s_clearConsumed() {
+  document.querySelectorAll('#s-people-list .person-card').forEach(c => { const id = s_getCardId(c); const inp = document.getElementById(`sp-cons-${id}`); if(inp){inp.value='';inp.classList.remove('auto-filled');} });
+  s_refreshTotals();
+}
+
+function s_getPeople() {
+  const cards = document.querySelectorAll('#s-people-list .person-card');
+  if (!cards.length) { s_showErr('Add at least one person.'); return null; }
+  const people = [];
+  let vi = 0;
+  for (const card of cards) {
+    vi++;
+    const id   = s_getCardId(card);
+    const name = (document.getElementById(`sp-name-${id}`)?.value||'').trim();
+    const paid     = round2(Math.max(0, parseFloat(document.getElementById(`sp-paid-${id}`)?.value)||0));
+    const consumed = round2(Math.max(0, parseFloat(document.getElementById(`sp-cons-${id}`)?.value)||0));
+    if (!name) { s_showErr(`Enter a name for Person ${vi}.`); document.getElementById(`sp-name-${id}`)?.focus(); return null; }
+    people.push({ name, paid, consumed, net: round2(paid - consumed) });
   }
+  return people;
+}
 
-  // ── Sticky totals bar ──────────────────────────────────
-  // FIX #1: badge uses getAllowedBuffer()
-  // FIX #2 (design): totals count ALL people — "Out of split" only
-  //   affects equal-distribution auto-fill, not net balance accounting.
-  function refreshTotals() {
-    var paid = 0, consumed = 0;
-    document.querySelectorAll('.person-card').forEach(function(card) {
-      var id = getCardId(card);
-      paid     += readValue('paid-' + id);
-      consumed += readValue('consumed-' + id);
-    });
-    document.getElementById('bar-paid').textContent     = fmtBar(paid);
-    document.getElementById('bar-consumed').textContent = fmtBar(consumed);
-    var diff    = Math.abs(paid - consumed);
-    var allowed = getAllowedBuffer(paid);
-    var badge   = document.getElementById('bar-diff-badge');
-    if (diff < 0.01) {
-      badge.textContent = 'Balanced'; badge.className = 'diff-badge ok';
-    } else if (diff <= allowed) {
-      badge.textContent = 'Off ' + fmtBar(diff); badge.className = 'diff-badge warn';
-    } else {
-      badge.textContent = 'Off ' + fmtBar(diff); badge.className = 'diff-badge error';
+function s_showErr(msg) { const el = document.getElementById('s-alert-error'); el.innerHTML = msg; el.classList.add('show'); }
+function s_hideErr()    { document.getElementById('s-alert-error').classList.remove('show'); }
+
+function s_onCalculate() {
+  s_hideErr();
+  const people = s_getPeople();
+  if (!people) return;
+  const totalPaid     = round2(people.reduce((s,p)=>s+p.paid,0));
+  const totalConsumed = round2(people.reduce((s,p)=>s+p.consumed,0));
+  const diff = round2(Math.abs(totalPaid - totalConsumed));
+  const buf  = getAllowedBuffer(totalPaid);
+
+  if (diff > buf) {
+    s_showErr(`Cannot calculate — Paid (${fmt(totalPaid)}) and Consumed (${fmt(totalConsumed)}) differ by ${fmt(diff)}, exceeding the buffer of ${fmt(buf)}.`);
+    return;
+  }
+  if (diff > 0) {
+    openModal(
+      `Paid <b>${fmt(totalPaid)}</b> vs Consumed <b>${fmt(totalConsumed)}</b> — difference of <b>${fmt(diff)}</b>. Within the allowed buffer (<b>${fmt(buf)}</b>) but not perfectly balanced. Proceed anyway?`,
+      () => s_renderResults(people, totalPaid)
+    );
+    return;
+  }
+  s_renderResults(people, totalPaid);
+}
+
+function s_renderResults(people, totalPaid) {
+  const name = document.getElementById('s-event-name').value.trim() || 'Settlement';
+  const date = document.getElementById('s-event-date').value;
+  const meta = date
+    ? `<b>${fmtDate(date)}</b> &nbsp;·&nbsp; ${people.length} people &nbsp;·&nbsp; ${fmt(totalPaid)} total`
+    : `${people.length} people &nbsp;·&nbsp; ${fmt(totalPaid)} total`;
+
+  renderResults({
+    people, totalPaid, eventName:name, eventMeta:meta,
+    summaryListId:'s-summary-list', statsBarId:'s-stats-bar',
+    txnListId:'s-txn-list', shareSecId:'s-share-section',
+    resNameId:'s-res-name', resMetaId:'s-res-meta',
+    waEventName:name, waEventDate:date
+  });
+  showPage('simple-p2');
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   TRIP MODE
+═══════════════════════════════════════════════════════════ */
+
+let t_members   = [];   // array of name strings
+let t_expCount  = 0;    // monotonic expense counter
+
+function startTrip() {
+  showPage('trip-p1');
+}
+
+function t_reset() {
+  t_members = []; t_expCount = 0;
+  document.getElementById('t-member-tags').innerHTML = '';
+  document.getElementById('t-member-input').value   = '';
+  document.getElementById('t-expense-list').innerHTML = '';
+  document.getElementById('t-event-name').value  = '';
+  document.getElementById('t-event-start').value = '';
+  document.getElementById('t-event-end').value   = '';
+  document.getElementById('t-p1-alert').classList.remove('show');
+  document.getElementById('t-p2-alert').classList.remove('show');
+}
+
+/* ─── Members ─── */
+function t_addMember() {
+  const inp  = document.getElementById('t-member-input');
+  const name = inp.value.trim();
+  if (!name) return;
+  if (t_members.includes(name)) { inp.value=''; return; }
+  t_members.push(name);
+  inp.value = '';
+  t_renderMemberTags();
+  // Refresh all expense share grids to include the new member
+  document.querySelectorAll('.expense-card').forEach(c => {
+    const id = c.id.replace('exp-','');
+    t_rebuildShareGrid(id);
+  });
+  t_refreshBar();
+}
+
+function t_removeMember(name) {
+  t_members = t_members.filter(m => m !== name);
+  t_renderMemberTags();
+  document.querySelectorAll('.expense-card').forEach(c => {
+    const id = c.id.replace('exp-','');
+    t_rebuildShareGrid(id);
+  });
+}
+
+function t_renderMemberTags() {
+  const wrap = document.getElementById('t-member-tags');
+  wrap.innerHTML = '';
+  t_members.forEach(name => {
+    const tag = document.createElement('div');
+    tag.className = 'member-tag';
+    tag.innerHTML = `${esc(name)} <span class="tag-remove" onclick="t_removeMember('${esc(name)}')">&times;</span>`;
+    wrap.appendChild(tag);
+  });
+}
+
+function t_goToExpenses() {
+  const err = document.getElementById('t-p1-alert');
+  err.classList.remove('show');
+  const tripName = document.getElementById('t-event-name').value.trim();
+  if (!tripName) { err.innerHTML = 'Please enter a trip name.'; err.classList.add('show'); return; }
+  if (t_members.length < 2) { err.innerHTML = 'Add at least 2 group members.'; err.classList.add('show'); return; }
+
+  showPage('trip-p2');
+  if (!document.querySelector('#t-expense-list .expense-card')) {
+    t_addExpense();
+  }
+}
+
+/* ─── Expenses ─── */
+function t_addExpense() {
+  t_expCount++;
+  const id = t_expCount;
+
+  const card = document.createElement('div');
+  card.className = 'expense-card'; card.id = `exp-${id}`;
+
+  // Build payer options
+  const payerOpts = t_members.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+
+  card.innerHTML = `
+    <div class="expense-card-header">
+      <span class="expense-num" id="exp-num-${id}">EXPENSE ${id}</span>
+      <button class="btn-remove" onclick="t_removeExpense(${id})">&#x2715;</button>
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label>Date</label>
+      <div class="date-chip-row" id="exp-date-chips-${id}"></div>
+      <input type="date" class="hidden-date-input" id="exp-date-native-${id}"
+             onchange="t_onCustomDateChange(${id})" />
+    </div>
+    <div class="form-group">
+      <label for="exp-desc-${id}">Description</label>
+      <input type="text" id="exp-desc-${id}" placeholder="e.g. Accommodation, Dinner" autocomplete="off" />
+    </div>
+    <div class="two-col">
+      <div class="form-group">
+        <label for="exp-amt-${id}">Amount (Rs.)</label>
+        <input type="number" id="exp-amt-${id}" placeholder="0" min="0" step="any" inputmode="decimal" oninput="t_refreshBar()" />
+      </div>
+      <div class="form-group">
+        <label for="exp-payer-${id}">Paid by</label>
+        <select id="exp-payer-${id}">${payerOpts}</select>
+      </div>
+    </div>
+    <div style="margin-top:4px">
+      <span class="share-label">Shared by</span>
+      <div class="share-quick">
+        <button class="btn-quick" onclick="t_checkAll(${id})">All</button>
+        <button class="btn-quick" onclick="t_checkNone(${id})">None</button>
+      </div>
+      <div class="share-grid" id="exp-grid-${id}"></div>
+    </div>`;
+
+  document.getElementById('t-expense-list').appendChild(card);
+  t_buildDateChips(id);
+  t_rebuildShareGrid(id);
+  t_renumberExpenses();
+}
+
+/* ─── Date chip helpers ─── */
+
+/**
+ * Builds the tappable date chip row for one expense card.
+ * Chips are: one per day of the trip (Day 1, Day 2 …) + a "Custom" fallback.
+ * If no trip dates are set, only the Custom chip is shown.
+ */
+function t_buildDateChips(id) {
+  const row = document.getElementById(`exp-date-chips-${id}`);
+  if (!row) return;
+
+  const startVal = document.getElementById('t-event-start')?.value;
+  const endVal   = document.getElementById('t-event-end')?.value;
+
+  // Preserve any previously selected date value
+  const currentVal = row.dataset.selectedDate || '';
+
+  row.innerHTML = '';
+  row.dataset.selectedDate = currentVal;
+
+  const tripDays = [];
+  if (startVal) {
+    const start = new Date(startVal + 'T00:00:00');
+    const end   = endVal ? new Date(endVal + 'T00:00:00') : start;
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      tripDays.push(new Date(d));
     }
   }
 
-  // ── Equal split ────────────────────────────────────────
-  // FIX #2: only zero previously auto-filled excluded fields
-  // FIX #4: round2() applied to all share arithmetic
-  function applySplitEqually() {
-    var cards = document.querySelectorAll('.person-card');
-    if (!cards.length) { alert('Add people first.'); return; }
-    var totalPaid = 0;
-    cards.forEach(function(c) { totalPaid += readValue('paid-' + getCardId(c)); });
-    if (!totalPaid) { alert('Enter at least one Amount Paid first.'); return; }
-    var included = Array.from(cards).filter(function(c) { return c.dataset.includeSplit === 'true'; });
-    if (!included.length) { alert('At least one person must be in the split.'); return; }
-    var base      = Math.floor((totalPaid / included.length) * 100) / 100;
-    var remainder = round2(totalPaid - base * included.length);
-    included.forEach(function(card, i) {
-      var inp = document.getElementById('consumed-' + getCardId(card));
-      inp.value = round2(i === 0 ? base + remainder : base);
-      inp.classList.add('auto-filled');
+  // Build a chip per trip day
+  tripDays.forEach((day, idx) => {
+    const iso   = day.toISOString().slice(0, 10);
+    const label = `Day ${idx + 1} · ${day.toLocaleDateString('en-GB', { day:'numeric', month:'short' })}`;
+    const chip  = document.createElement('div');
+    chip.className    = 'date-chip' + (currentVal === iso ? ' selected' : '');
+    chip.dataset.date = iso;
+    chip.textContent  = label;
+    chip.onclick      = () => t_selectDateChip(id, iso, chip);
+    row.appendChild(chip);
+  });
+
+  // Always add a Custom chip at the end
+  const customChip = document.createElement('div');
+  const isCustomSelected = currentVal && !tripDays.some(d => d.toISOString().slice(0,10) === currentVal);
+  customChip.className   = 'date-chip custom-chip' + (isCustomSelected ? ' selected' : '');
+  customChip.dataset.date = 'custom';
+  customChip.id           = `exp-custom-chip-${id}`;
+  // Show the picked date if it was a custom one
+  customChip.textContent  = isCustomSelected
+    ? fmtDateShort(currentVal)
+    : '+ Custom date';
+  customChip.onclick = () => {
+    const native = document.getElementById(`exp-date-native-${id}`);
+    if (native) { native.value = currentVal || ''; native.showPicker?.(); native.click(); }
+  };
+  row.appendChild(customChip);
+
+  // If nothing selected yet and there are trip days, auto-select Day 1
+  if (!currentVal && tripDays.length > 0) {
+    const firstIso = tripDays[0].toISOString().slice(0, 10);
+    t_selectDateChip(id, firstIso, row.querySelector('.date-chip'));
+  }
+}
+
+/** Selects a specific date chip and deselects all others */
+function t_selectDateChip(id, iso, clickedChip) {
+  const row = document.getElementById(`exp-date-chips-${id}`);
+  if (!row) return;
+  row.querySelectorAll('.date-chip').forEach(c => c.classList.remove('selected'));
+  if (clickedChip) clickedChip.classList.add('selected');
+  row.dataset.selectedDate = iso;
+}
+
+/** Called when the hidden native date input changes (custom date picked) */
+function t_onCustomDateChange(id) {
+  const native     = document.getElementById(`exp-date-native-${id}`);
+  const row        = document.getElementById(`exp-date-chips-${id}`);
+  const customChip = document.getElementById(`exp-custom-chip-${id}`);
+  if (!native || !row || !customChip) return;
+
+  const iso = native.value;
+  row.querySelectorAll('.date-chip').forEach(c => c.classList.remove('selected'));
+  customChip.classList.add('selected');
+  customChip.textContent   = iso ? fmtDateShort(iso) : '+ Custom date';
+  row.dataset.selectedDate = iso;
+}
+
+/** Short formatted date for chip label: "12 Apr" */
+function fmtDateShort(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+}
+
+/** Rebuild all expense date chips (called when trip dates change) */
+function t_rebuildAllDateChips() {
+  document.querySelectorAll('#t-expense-list .expense-card').forEach(c => {
+    const id = c.id.replace('exp-', '');
+    t_buildDateChips(id);
+  });
+}
+
+function t_removeExpense(id) {
+  document.getElementById(`exp-${id}`)?.remove();
+  t_renumberExpenses();
+  t_refreshBar();
+}
+
+function t_renumberExpenses() {
+  document.querySelectorAll('#t-expense-list .expense-card').forEach((c,i) => {
+    const id = c.id.replace('exp-','');
+    const el = document.getElementById(`exp-num-${id}`);
+    if (el) el.textContent = `EXPENSE ${i+1}`;
+  });
+}
+
+/* Build / rebuild the share-by checkbox grid for an expense card */
+function t_rebuildShareGrid(id) {
+  const grid = document.getElementById(`exp-grid-${id}`);
+  if (!grid) return;
+
+  // Preserve current checked state before rebuilding
+  const checked = new Set();
+  grid.querySelectorAll('.share-chip.checked').forEach(chip => checked.add(chip.dataset.member));
+  // If nothing was checked yet, default to all
+  const defaultAll = checked.size === 0;
+
+  grid.innerHTML = '';
+  t_members.forEach(name => {
+    const chip = document.createElement('label');
+    chip.className = 'share-chip' + (defaultAll || checked.has(name) ? ' checked' : '');
+    chip.dataset.member = name;
+    chip.innerHTML = `<input type="checkbox" ${defaultAll || checked.has(name) ? 'checked' : ''} onchange="t_onChipChange(this)" />${esc(name)}`;
+    chip.querySelector('input').addEventListener('change', () => {
+      chip.classList.toggle('checked', chip.querySelector('input').checked);
     });
-    Array.from(cards).filter(function(c) { return c.dataset.includeSplit !== 'true'; }).forEach(function(card) {
-      var inp = document.getElementById('consumed-' + getCardId(card));
-      if (inp && inp.classList.contains('auto-filled')) { inp.value = 0; inp.classList.remove('auto-filled'); }
+    grid.appendChild(chip);
+  });
+}
+
+function t_onChipChange(inp) {
+  inp.closest('.share-chip').classList.toggle('checked', inp.checked);
+}
+
+function t_checkAll(id) {
+  document.querySelectorAll(`#exp-grid-${id} .share-chip`).forEach(c => {
+    c.classList.add('checked'); c.querySelector('input').checked = true;
+  });
+}
+function t_checkNone(id) {
+  document.querySelectorAll(`#exp-grid-${id} .share-chip`).forEach(c => {
+    c.classList.remove('checked'); c.querySelector('input').checked = false;
+  });
+}
+
+/* ─── Live bar for trip mode ─── */
+function t_refreshBar() {
+  const cards = document.querySelectorAll('#t-expense-list .expense-card');
+  let total = 0, count = 0;
+  cards.forEach(c => {
+    const id = c.id.replace('exp-','');
+    const amt = round2(Math.max(0, parseFloat(document.getElementById(`exp-amt-${id}`)?.value)||0));
+    if (amt > 0) count++;
+    total += amt;
+  });
+  total = round2(total);
+  const perHead = t_members.length > 0 ? round2(total / t_members.length) : 0;
+  document.getElementById('t-bar-count').textContent  = count;
+  document.getElementById('t-bar-total').textContent  = fmtBar(total);
+  document.getElementById('t-bar-perhead').textContent = fmtBar(perHead);
+}
+
+/* ─── Read all expenses into structured data ─── */
+function t_getExpenses() {
+  const cards = document.querySelectorAll('#t-expense-list .expense-card');
+  if (!cards.length) return null;
+  const expenses = [];
+  let vi = 0;
+  for (const card of cards) {
+    vi++;
+    const id    = card.id.replace('exp-','');
+    const desc  = (document.getElementById(`exp-desc-${id}`)?.value||'').trim() || `Expense ${vi}`;
+    const amt   = round2(Math.max(0, parseFloat(document.getElementById(`exp-amt-${id}`)?.value)||0));
+    const payer = document.getElementById(`exp-payer-${id}`)?.value||'';
+    // Read selected date from chip row dataset
+    const dateRow = document.getElementById(`exp-date-chips-${id}`);
+    const date    = (dateRow?.dataset.selectedDate) || '';
+    // Collect checked members
+    const sharedBy = [];
+    document.querySelectorAll(`#exp-grid-${id} .share-chip.checked`).forEach(chip => {
+      sharedBy.push(chip.dataset.member);
     });
-    refreshTotals();
+    if (amt === 0) continue; // skip zero-amount rows silently
+    if (!payer)   continue;
+    expenses.push({ desc, amt, payer, sharedBy, date });
+  }
+  return expenses;
+}
+
+/* ─── Calculate trip settlement ─── */
+function t_calculate() {
+  const errEl = document.getElementById('t-p2-alert');
+  errEl.classList.remove('show');
+
+  const expenses = t_getExpenses();
+  if (!expenses || expenses.length === 0) {
+    errEl.innerHTML = 'Add at least one expense with an amount.'; errEl.classList.add('show'); return;
   }
 
-  function clearConsumed() {
-    document.querySelectorAll('.person-card').forEach(function(card) {
-      var inp = document.getElementById('consumed-' + getCardId(card));
-      if (inp) { inp.value = ''; inp.classList.remove('auto-filled'); }
-    });
-    refreshTotals();
-  }
+  // Build per-member paid and consumed maps
+  const paid     = {};
+  const consumed = {};
+  t_members.forEach(m => { paid[m] = 0; consumed[m] = 0; });
 
-  // ── Data helpers ───────────────────────────────────────
-  // FIX #10: negatives clamped to 0 at read-time (defence in depth)
-  function readValue(elId) {
-    var el = document.getElementById(elId);
-    var v  = el ? parseFloat(el.value) : NaN;
-    return (!isNaN(v) && v > 0) ? v : 0;
-  }
-
-  // FIX #4: net pre-rounded before entering algorithm
-  function getPeople() {
-    var cards = document.querySelectorAll('.person-card');
-    if (!cards.length) { showError('Add at least one person.'); return null; }
-    var people = [];
-    for (var i = 0; i < cards.length; i++) {
-      var id   = getCardId(cards[i]);
-      var nEl  = document.getElementById('name-' + id);
-      var name = nEl ? nEl.value.trim() : '';
-      var paid     = readValue('paid-' + id);
-      var consumed = readValue('consumed-' + id);
-      if (!name) { showError('Enter a name for Person ' + id + '.'); if (nEl) nEl.focus(); return null; }
-      people.push({ name: name, paid: paid, consumed: consumed, net: round2(paid - consumed) });
-    }
-    return people;
-  }
-
-  // ── Settlement algorithm ───────────────────────────────
-  // FIX #3: explicit transfer subtraction (not C.bal += D.bal)
-  // FIX #4: round2() after every balance mutation to prevent drift
-  function computeSettlement(people) {
-    var EPS = 0.01;
-    var creditors = people.filter(function(p) { return p.net > EPS; })
-                          .map(function(p)    { return { name: p.name, bal: p.net }; });
-    var debtors   = people.filter(function(p) { return p.net < -EPS; })
-                          .map(function(p)    { return { name: p.name, bal: p.net }; });
-    creditors.sort(function(a,b) { return b.bal - a.bal; });
-    debtors.sort(  function(a,b) { return a.bal - b.bal; });
-    var txns = [], ci = 0, di = 0;
-    while (ci < creditors.length && di < debtors.length) {
-      var C = creditors[ci], D = debtors[di];
-      var transfer = round2(Math.min(C.bal, -D.bal)); // FIX #3: named, explicit
-      txns.push({ from: D.name, to: C.name, amount: transfer });
-      C.bal = round2(C.bal - transfer); // FIX #3 & #4
-      D.bal = round2(D.bal + transfer); // FIX #3 & #4
-      if (C.bal <  EPS) ci++;
-      if (D.bal > -EPS) di++;
-    }
-    return txns;
-  }
-
-  // ── Mismatch confirm (FIX #11) ─────────────────────────
-  function showMismatchConfirm(people, diff, paid, consumed) {
-    pendingCalculate = people;
-    document.getElementById('mismatch-msg').textContent =
-      'Paid ' + fmt(paid) + ' vs Consumed ' + fmt(consumed) +
-      ' — a difference of ' + fmt(diff) + '. Settlement will use numbers as entered. Proceed anyway?';
-    document.getElementById('mismatch-confirm').style.display = 'block';
-  }
-  function hideMismatchConfirm() {
-    document.getElementById('mismatch-confirm').style.display = 'none';
-    pendingCalculate = null;
-  }
-  function confirmAndCalculate() {
-    if (!pendingCalculate) return;
-    var people = pendingCalculate; hideMismatchConfirm(); renderResults(people);
-  }
-
-  // ── Calculate ──────────────────────────────────────────
-  function calculate() {
-    hideAlerts(); hideMismatchConfirm();
-    var people = getPeople(); if (!people) return;
-    var totalPaid     = round2(people.reduce(function(s,p) { return s+p.paid; }, 0));
-    var totalConsumed = round2(people.reduce(function(s,p) { return s+p.consumed; }, 0));
-    var diff          = round2(Math.abs(totalPaid - totalConsumed));
-    var allowed       = getAllowedBuffer(totalPaid); // FIX #1
-    if (diff > allowed) {
-      showError('Cannot calculate — Paid (' + fmt(totalPaid) + ') vs Consumed (' + fmt(totalConsumed) +
-        ') differ by ' + fmt(diff) + ', exceeding the tolerance of ' + fmt(round2(allowed)) +
-        ' (Rs.\u00A0500 or 3% of total, whichever is greater).');
-      return;
-    }
-    if (diff > 0.01) { showMismatchConfirm(people, diff, totalPaid, totalConsumed); return; } // FIX #11
-    renderResults(people);
-  }
-
-  // ── Render results ─────────────────────────────────────
-  // FIX #5: fmt() always absolute — sign prepended explicitly below
-  function renderResults(people) {
-    var totalPaid = round2(people.reduce(function(s,p) { return s+p.paid; }, 0));
-    var eventName = (document.getElementById('event-name').value||'').trim() || 'Settlement';
-    var eventDate = document.getElementById('event-date').value;
-    document.getElementById('result-event-name').textContent = eventName;
-    var metaEl  = document.getElementById('result-event-meta');
-    var dateStr = eventDate ? fmtDate(eventDate) : '';
-    metaEl.innerHTML = dateStr
-      ? '<b>' + dateStr + '</b> &nbsp;&middot;&nbsp; ' + people.length + ' people &nbsp;&middot;&nbsp; ' + fmt(totalPaid) + ' total'
-      : people.length + ' people &nbsp;&middot;&nbsp; ' + fmt(totalPaid) + ' total';
-
-    var summaryList = document.getElementById('summary-list');
-    summaryList.innerHTML = '';
-    people.forEach(function(p) {
-      var isGreen = p.net > 0.01, isRed = p.net < -0.01;
-      var bc   = isGreen ? 'badge-green' : isRed ? 'badge-red' : 'badge-grey';
-      var nc   = isGreen ? 'net-green'   : isRed ? 'net-red'   : 'net-grey';
-      var icon = isGreen ? '&#8593;' : isRed ? '&#8595;' : '&#10003;';
-      var sign = isGreen ? '+' : isRed ? '-' : ''; // FIX #5: explicit sign
-      var el = document.createElement('div'); el.className = 'summary-card';
-      el.innerHTML =
-        '<div class="summary-badge ' + bc + '">' + icon + '</div>' +
-        '<div class="summary-info"><div class="summary-name">' + esc(p.name) + '</div>' +
-          '<div class="summary-meta">Paid ' + fmt(p.paid) + ' &middot; Used ' + fmt(p.consumed) + '</div></div>' +
-        '<div class="summary-net ' + nc + '">' + sign + fmt(p.net) + '</div>';
-      summaryList.appendChild(el);
-    });
-
-    var txns = computeSettlement(people);
-    var txnList = document.getElementById('transactions-list');
-    var shareEl = document.getElementById('share-section');
-    txnList.innerHTML = ''; shareEl.innerHTML = '';
-
-    document.getElementById('stats-bar-wrap').innerHTML =
-      '<div class="stats-bar">' +
-        '<div class="stat"><div class="stat-value">' + people.length + '</div><div class="stat-label">People</div></div>' +
-        '<div class="stat-divider"></div>' +
-        '<div class="stat"><div class="stat-value">' + txns.length + '</div><div class="stat-label">Transactions</div></div>' +
-        '<div class="stat-divider"></div>' +
-        '<div class="stat"><div class="stat-value">' + fmtCompact(totalPaid) + '</div><div class="stat-label">Total Bill</div></div>' +
-      '</div>';
-
-    if (txns.length === 0) {
-      txnList.innerHTML = '<div class="settled-banner">Everyone is already settled up!</div>';
-    } else {
-      txns.forEach(function(t, i) {
-        var el = document.createElement('div'); el.className = 'txn-card';
-        var url = 'https://wa.me/?text=' + encodeURIComponent(buildSingleWaMsg(t, totalPaid, eventName, eventDate));
-        el.innerHTML =
-          '<div class="txn-num">' + String(i+1).padStart(2,'0') + '</div>' +
-          '<div class="txn-detail"><div class="txn-text"><strong>' + esc(t.from) + '</strong> &rarr; <strong>' + esc(t.to) + '</strong></div></div>' +
-          '<div class="txn-amount">' + fmt(t.amount) + '</div>' +
-          '<a class="btn-wa" href="' + url + '" target="_blank" rel="noopener">' + waIcon(13) + ' Send</a>';
-        txnList.appendChild(el);
+  expenses.forEach(exp => {
+    paid[exp.payer] = round2((paid[exp.payer]||0) + exp.amt);
+    if (exp.sharedBy.length > 0) {
+      const share = round2(exp.amt / exp.sharedBy.length);
+      // Distribute remainder to first member
+      const remainder = round2(exp.amt - share * exp.sharedBy.length);
+      exp.sharedBy.forEach((m, i) => {
+        consumed[m] = round2((consumed[m]||0) + share + (i===0 ? remainder : 0));
       });
-      var fullUrl = 'https://wa.me/?text=' + encodeURIComponent(buildFullWaMsg(txns, totalPaid, eventName, eventDate));
-      shareEl.innerHTML =
-        '<div class="share-banner"><div class="share-banner-text">Want to share with your friends?' +
-        '<span>Send the full settlement summary to your group</span></div></div>' +
-        '<a class="btn-wa-full" href="' + fullUrl + '" target="_blank" rel="noopener">' + waIcon(16) + ' Share Full Summary on WhatsApp</a>';
     }
-    showPage(2);
-  }
+  });
 
-  // ── Reset ──────────────────────────────────────────────
-  function resetAll() {
-    document.getElementById('people-list').innerHTML   = '';
-    document.getElementById('share-section').innerHTML = '';
-    document.getElementById('event-name').value = '';
-    document.getElementById('event-date').value = '';
-    hideAlerts(); hideMismatchConfirm();
-    personCount = 0; displayCount = 0;
-    addPerson(); addPerson();
-    refreshTotals(); showPage(1);
-  }
+  const people = t_members.map(name => ({
+    name,
+    paid:     round2(paid[name]||0),
+    consumed: round2(consumed[name]||0),
+    net:      round2((paid[name]||0) - (consumed[name]||0))
+  }));
 
-  // ── Alerts ─────────────────────────────────────────────
-  function showError(msg) { var el=document.getElementById('alert-error'); el.textContent=msg; el.classList.add('show'); }
-  function hideAlerts()   { document.getElementById('alert-error').classList.remove('show'); }
+  const totalPaid = round2(people.reduce((s,p)=>s+p.paid,0));
+  t_renderResults(people, totalPaid, expenses);
+}
 
-  // ── Format helpers ─────────────────────────────────────
-  /** fmt() always returns ABSOLUTE value — callers prepend sign (FIX #5) */
-  function fmt(n) {
-    return 'Rs.\u00A0' + Math.abs(n).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:2});
-  }
-  function fmtBar(n) {
-    if (!n) return 'Rs.\u00A00';
-    return 'Rs.\u00A0' + Math.abs(n).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:0});
-  }
-  function fmtCompact(n) {
-    if (n>=100000) return 'Rs.\u00A0'+(n/100000).toFixed(1)+'L';
-    if (n>=1000)   return 'Rs.\u00A0'+(n/1000).toFixed(1)+'K';
-    return fmt(n);
-  }
-  function fmtDate(s) {
-    var d=new Date(s+'T00:00:00');
-    return d.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
-  }
-  function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function t_renderResults(people, totalPaid, expenses) {
+  const tripName  = document.getElementById('t-event-name').value.trim() || 'Trip';
+  const startDate = document.getElementById('t-event-start').value;
+  const endDate   = document.getElementById('t-event-end').value;
 
-  // ── WhatsApp (no emojis, FIX #9 compact) ──────────────
-  function waIcon(sz) {
-    return '<svg viewBox="0 0 32 32" style="width:'+sz+'px;height:'+sz+'px;fill:#fff;flex-shrink:0" aria-hidden="true"><path d="M16 .5C7.44.5.5 7.44.5 16c0 2.83.74 5.48 2.04 7.78L.5 31.5l7.92-2.07A15.45 15.45 0 0016 31.5c8.56 0 15.5-6.94 15.5-15.5S24.56.5 16 .5zm0 28.3a12.73 12.73 0 01-6.48-1.77l-.46-.28-4.7 1.23 1.25-4.57-.3-.47A12.73 12.73 0 013.2 16C3.2 9.47 8.47 4.2 16 4.2S28.8 9.47 28.8 16 23.53 28.8 16 28.8zm6.97-9.53c-.38-.19-2.26-1.11-2.61-1.24-.35-.13-.6-.19-.86.19-.25.38-.98 1.24-1.2 1.49-.22.25-.44.28-.82.09-.38-.19-1.6-.59-3.05-1.88-1.13-1-1.89-2.24-2.11-2.62-.22-.38-.02-.58.17-.77.17-.17.38-.44.57-.66.19-.22.25-.38.38-.63.13-.25.06-.47-.03-.66-.09-.19-.86-2.07-1.18-2.84-.31-.74-.63-.64-.86-.65h-.73c-.25 0-.66.09-1.01.47-.35.38-1.32 1.29-1.32 3.14s1.35 3.64 1.54 3.89c.19.25 2.66 4.06 6.44 5.69.9.39 1.6.62 2.15.79.9.29 1.73.25 2.38.15.73-.11 2.26-.92 2.58-1.81.32-.89.32-1.65.22-1.81-.09-.16-.35-.25-.73-.44z"/></svg>';
-  }
-  function buildSingleWaMsg(t, bill, name, date) {
-    var l = ['*SliceIT - Payment Reminder*','','Hi '+t.from+',','','This is a reminder for the *'+name+'* settlement.'];
-    if (date) l.push('Date: '+fmtDate(date));
-    l.push('','You owe *'+t.to+'* the amount of *'+fmt(t.amount)+'*.','Please settle up at your earliest convenience.','','_(Total bill: '+fmt(bill)+' - Calculated via SliceIT)_');
-    return l.join('\n');
-  }
-  function buildFullWaMsg(txns, bill, name, date) {
-    var l = ['*SliceIT - Settlement Summary*','*'+name+'*'];
-    if (date) l.push('Date: '+fmtDate(date));
-    l.push('Total Bill: *'+fmt(bill)+'*','','*Settlement Instructions*','');
-    txns.forEach(function(t,i) { l.push((i+1)+'. *'+t.from+'* pays *'+t.to+'*  -  '+fmt(t.amount)); });
-    l.push('',txns.length+' transaction'+(txns.length!==1?'s':'')+' required.','_Calculated via SliceIT_');
-    return l.join('\n');
-  }
+  let datePart = '';
+  if (startDate && endDate)   datePart = `<b>${fmtDate(startDate)}</b> &mdash; <b>${fmtDate(endDate)}</b>`;
+  else if (startDate)         datePart = `<b>${fmtDate(startDate)}</b>`;
 
-  // ── Init ───────────────────────────────────────────────
-  addPerson(); addPerson();
+  const meta = [datePart, `${t_members.length} members`, `${expenses.length} expenses`, `${fmt(totalPaid)} total`].filter(Boolean).join(' &nbsp;·&nbsp; ');
+
+  // Expense breakdown list
+  const breakdownEl = document.getElementById('t-exp-breakdown');
+  breakdownEl.innerHTML = '';
+  expenses.forEach(exp => {
+    const perHead = exp.sharedBy.length > 0 ? round2(exp.amt / exp.sharedBy.length) : 0;
+    const row = document.createElement('div');
+    row.className = 'exp-row';
+    const datePart = exp.date ? `<span style="color:var(--lime);font-weight:700;">${fmtDateShort(exp.date)}</span> &middot; ` : '';
+    row.innerHTML = `
+      <div class="exp-row-info">
+        <div class="exp-row-title">${esc(exp.desc)}</div>
+        <div class="exp-row-meta">${datePart}Paid by <strong>${esc(exp.payer)}</strong> &middot; ${exp.sharedBy.length} sharing${perHead>0?' &middot; '+fmt(perHead)+' each':''}</div>
+      </div>
+      <div class="exp-row-amount">${fmt(exp.amt)}</div>`;
+    breakdownEl.appendChild(row);
+  });
+
+  renderResults({
+    people, totalPaid, eventName:tripName, eventMeta:meta,
+    summaryListId:'t-summary-list', statsBarId:'t-stats-bar',
+    txnListId:'t-txn-list', shareSecId:'t-share-section',
+    resNameId:'t-res-name', resMetaId:'t-res-meta',
+    waEventName:tripName, waEventDate:startDate
+  });
+  showPage('trip-p3');
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════ */
+// Nothing to init — pages load on demand
 </script>
 </body>
 </html>
