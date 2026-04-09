@@ -610,7 +610,7 @@ function computeSettlement(people) {
 }
 
 /* ─── Shared results renderer ─── */
-function renderResults({ people, totalPaid, eventName, eventMeta, summaryListId, statsBarId, txnListId, shareSecId, resNameId, resMetaId, waEventName, waEventDate }) {
+function renderResults({ people, totalPaid, eventName, eventMeta, summaryListId, statsBarId, txnListId, shareSecId, resNameId, resMetaId, waEventName, waEventDate, expenses }) {
   document.getElementById(resNameId).textContent = eventName;
   document.getElementById(resMetaId).innerHTML   = eventMeta;
 
@@ -664,7 +664,9 @@ function renderResults({ people, totalPaid, eventName, eventMeta, summaryListId,
         <a class="btn-wa" href="${url}" target="_blank" rel="noopener">${waIcon()} Send</a>`;
       tl.appendChild(el);
     });
-    const fullUrl = 'https://wa.me/?text=' + encodeURIComponent(buildFullWaMsg(txns, totalPaid, waEventName, waEventDate));
+    const fullUrl = 'https://wa.me/?text=' + encodeURIComponent(
+      buildFullWaMsg(txns, totalPaid, waEventName, waEventDate, people, expenses || null)
+    );
     ss.innerHTML = `
       <div class="share-banner">
         <div class="share-banner-text">Want to share with your friends?<span>Send the full summary to your group</span></div>
@@ -683,12 +685,76 @@ function buildSingleWaMsg(txn, total, eventName, eventDate) {
   lines.push(``,`You owe *${txn.to}* the amount of *${fmt(txn.amount)}*.`,`Please settle up at your earliest convenience.`,``,`_(Total bill: ${fmt(total)} - Calculated via SliceIT)_`);
   return lines.join('\n');
 }
-function buildFullWaMsg(txns, total, eventName, eventDate) {
-  const lines = [`*SliceIT - Settlement Summary*`,`*${eventName}*`];
+/**
+ * Full group WhatsApp summary.
+ * For Trip mode: includes Expense Breakdown + Per Person Summary + Settlement Instructions.
+ * For Simple mode: includes Per Person Summary + Settlement Instructions.
+ * @param {Array}  txns        - settlement transactions
+ * @param {number} total       - total bill amount
+ * @param {string} eventName
+ * @param {string} eventDate   - ISO date string (may be empty)
+ * @param {Array}  people      - [{name, paid, consumed, net}]
+ * @param {Array|null} expenses - trip expenses or null for simple mode
+ */
+function buildFullWaMsg(txns, total, eventName, eventDate, people, expenses) {
+  const SEP = '----------------------------';
+  const lines = [];
+
+  // ── Header ───────────────────────────────────────────
+  lines.push(`*SliceIT - Settlement Summary*`);
+  lines.push(`*${eventName}*`);
   if (eventDate) lines.push(`Date: ${fmtDate(eventDate)}`);
-  lines.push(`Total Bill: *${fmt(total)}*`,``,`*Settlement Instructions*`,``);
-  txns.forEach((t,i) => lines.push(`${i+1}. *${t.from}* pays *${t.to}*  -  ${fmt(t.amount)}`));
-  lines.push(``,`${txns.length} transaction${txns.length!==1?'s':''} required to settle the bill.`,`_Calculated via SliceIT_`);
+  lines.push(`Total Bill: *${fmt(total)}*`);
+
+  // ── Section 1: Expense Breakdown (Trip mode only) ────
+  if (expenses && expenses.length > 0) {
+    lines.push(``);
+    lines.push(SEP);
+    lines.push(`*EXPENSE BREAKDOWN*`);
+    lines.push(SEP);
+    expenses.forEach((exp, i) => {
+      const perHead = exp.sharedBy.length > 0 ? round2(exp.amt / exp.sharedBy.length) : 0;
+      const dateTag = exp.date ? `[${fmtDateShort(exp.date)}] ` : '';
+      lines.push(`${i + 1}. ${dateTag}*${exp.desc}*`);
+      lines.push(`   ${fmt(exp.amt)} - Paid by ${exp.payer}`);
+      if (exp.sharedBy.length > 0) {
+        lines.push(`   Shared by ${exp.sharedBy.join(', ')} (${fmt(perHead)} each)`);
+      }
+    });
+  }
+
+  // ── Section 2: Per Person Summary ───────────────────
+  lines.push(``);
+  lines.push(SEP);
+  lines.push(`*PER PERSON SUMMARY*`);
+  lines.push(SEP);
+  people.forEach(p => {
+    const netLabel = p.net > 0.01
+      ? `receives ${fmt(p.net)}`
+      : p.net < -0.01
+        ? `owes ${fmt(Math.abs(p.net))}`
+        : `settled`;
+    lines.push(`*${p.name}*`);
+    lines.push(`   Paid: ${fmt(p.paid)}  |  Share: ${fmt(p.consumed)}  |  Net: ${netLabel}`);
+  });
+
+  // ── Section 3: Settlement Instructions ──────────────
+  lines.push(``);
+  lines.push(SEP);
+  lines.push(`*SETTLEMENT INSTRUCTIONS*`);
+  lines.push(SEP);
+  if (txns.length === 0) {
+    lines.push(`Everyone is already settled up!`);
+  } else {
+    txns.forEach((t, i) => {
+      lines.push(`${i + 1}. *${t.from}* pays *${t.to}*  -  ${fmt(t.amount)}`);
+    });
+    lines.push(``);
+    lines.push(`${txns.length} transaction${txns.length !== 1 ? 's' : ''} required to settle the bill.`);
+  }
+
+  lines.push(``);
+  lines.push(`_Calculated via SliceIT_`);
   return lines.join('\n');
 }
 
@@ -864,7 +930,8 @@ function s_renderResults(people, totalPaid) {
     summaryListId:'s-summary-list', statsBarId:'s-stats-bar',
     txnListId:'s-txn-list', shareSecId:'s-share-section',
     resNameId:'s-res-name', resMetaId:'s-res-meta',
-    waEventName:name, waEventDate:date
+    waEventName:name, waEventDate:date,
+    expenses: null   // Simple mode has no itemised expenses
   });
   showPage('simple-p2');
 }
@@ -1263,7 +1330,8 @@ function t_renderResults(people, totalPaid, expenses) {
     summaryListId:'t-summary-list', statsBarId:'t-stats-bar',
     txnListId:'t-txn-list', shareSecId:'t-share-section',
     resNameId:'t-res-name', resMetaId:'t-res-meta',
-    waEventName:tripName, waEventDate:startDate
+    waEventName:tripName, waEventDate:startDate,
+    expenses   // Pass full expense list for the breakdown section in WA message
   });
   showPage('trip-p3');
 }
