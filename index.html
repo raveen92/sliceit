@@ -208,6 +208,62 @@
     .member-tag .tag-remove:hover { color:#fff; }
 
     /* ═══════════════════════════════════════════════════
+       TRIP MODE — PAYING ON BEHALF OF
+    ═══════════════════════════════════════════════════ */
+    .behalf-section { margin-top:16px; }
+    .behalf-row {
+      background:var(--surface); border:1.5px solid var(--border);
+      border-radius:var(--r-sm); padding:12px 14px;
+      margin-bottom:8px; box-shadow:var(--sh-sm);
+      animation:slideIn .2s ease;
+    }
+    .behalf-row-header {
+      display:flex; align-items:center; gap:8px; margin-bottom:10px;
+    }
+    .behalf-payer-select {
+      flex:1; border:1.5px solid var(--border); border-radius:8px;
+      padding:7px 28px 7px 10px; font-family:'DM Sans',sans-serif;
+      font-size:.85rem; font-weight:600; color:var(--text); background:var(--bg);
+      outline:none; -webkit-appearance:none; cursor:pointer;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238A8680' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 9px center;
+    }
+    .behalf-payer-select:focus { border-color:var(--text); background-color:#fff; }
+    .behalf-covers-label {
+      font-size:.72rem; font-weight:700; letter-spacing:.8px;
+      text-transform:uppercase; color:var(--muted); margin-bottom:7px;
+    }
+    .behalf-covered-chips { display:flex; flex-wrap:wrap; gap:6px; }
+    .behalf-covered-chip {
+      display:inline-flex; align-items:center; gap:5px;
+      padding:4px 10px; background:var(--lime); border-radius:20px;
+      font-size:.78rem; font-weight:700; color:var(--text);
+    }
+    .behalf-covered-chip .chip-x {
+      cursor:pointer; color:rgba(0,0,0,.4); font-size:.8rem; line-height:1;
+      transition:color .15s;
+    }
+    .behalf-covered-chip .chip-x:hover { color:var(--red); }
+    .behalf-add-covered {
+      display:inline-flex; align-items:center; gap:4px;
+      padding:4px 10px; border:1.5px dashed var(--border);
+      border-radius:20px; background:none; cursor:pointer;
+      font-family:'DM Sans',sans-serif; font-size:.78rem; font-weight:600;
+      color:var(--muted); transition:border-color .15s, color .15s;
+    }
+    .behalf-add-covered:hover { border-color:var(--text); color:var(--text); }
+    .behalf-add-btn {
+      display:flex; align-items:center; gap:6px;
+      padding:9px 14px; border:1.5px dashed var(--border);
+      border-radius:var(--r-sm); background:none;
+      font-family:'DM Sans',sans-serif; font-size:.82rem; font-weight:600;
+      color:var(--muted); cursor:pointer; width:100%;
+      justify-content:center; transition:border-color .15s, color .15s;
+      margin-top:4px;
+    }
+    .behalf-add-btn:hover { border-color:var(--text); color:var(--text); }
+
+    /* ═══════════════════════════════════════════════════
        TRIP MODE — EXPENSE CARDS
     ═══════════════════════════════════════════════════ */
     .trip-totals-bar { position:sticky; top:56px; z-index:90; background:var(--surface); border-bottom:1.5px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,.05); display:flex; }
@@ -435,6 +491,20 @@
     </section>
 
     <section style="margin-top:24px">
+      <div class="section-label">
+        Paying on Behalf of
+        <span style="font-size:.6rem;letter-spacing:.5px;color:var(--muted);font-weight:500;text-transform:none;">(optional)</span>
+      </div>
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;line-height:1.5;">
+        If one person is covering another's share (e.g. Poori pays for Salomi), set it up here. Their shares are merged and the covered person won't appear in settlement.
+      </div>
+      <div id="t-behalf-list"></div>
+      <button class="behalf-add-btn" id="t-behalf-add-btn" onclick="t_addBehalfRow()" style="display:none">
+        + Add arrangement
+      </button>
+    </section>
+
+    <section style="margin-top:24px">
       <div id="t-p1-alert" class="alert alert-error"></div>
       <button class="btn btn-primary" onclick="t_goToExpenses()">Next: Add Expenses &rarr;</button>
     </section>
@@ -610,7 +680,7 @@ function computeSettlement(people) {
 }
 
 /* ─── Shared results renderer ─── */
-function renderResults({ people, totalPaid, eventName, eventMeta, summaryListId, statsBarId, txnListId, shareSecId, resNameId, resMetaId, waEventName, waEventDate, expenses }) {
+function renderResults({ people, totalPaid, eventName, eventMeta, summaryListId, statsBarId, txnListId, shareSecId, resNameId, resMetaId, waEventName, waEventDate, expenses, behalfMap }) {
   document.getElementById(resNameId).textContent = eventName;
   document.getElementById(resMetaId).innerHTML   = eventMeta;
 
@@ -665,7 +735,7 @@ function renderResults({ people, totalPaid, eventName, eventMeta, summaryListId,
       tl.appendChild(el);
     });
     const fullUrl = 'https://wa.me/?text=' + encodeURIComponent(
-      buildFullWaMsg(txns, totalPaid, waEventName, waEventDate, people, expenses || null)
+      buildFullWaMsg(txns, totalPaid, waEventName, waEventDate, people, expenses || null, behalfMap || null)
     );
     ss.innerHTML = `
       <div class="share-banner">
@@ -685,18 +755,7 @@ function buildSingleWaMsg(txn, total, eventName, eventDate) {
   lines.push(``,`You owe *${txn.to}* the amount of *${fmt(txn.amount)}*.`,`Please settle up at your earliest convenience.`,``,`_(Total bill: ${fmt(total)} - Calculated via SliceIT)_`);
   return lines.join('\n');
 }
-/**
- * Full group WhatsApp summary.
- * For Trip mode: includes Expense Breakdown + Per Person Summary + Settlement Instructions.
- * For Simple mode: includes Per Person Summary + Settlement Instructions.
- * @param {Array}  txns        - settlement transactions
- * @param {number} total       - total bill amount
- * @param {string} eventName
- * @param {string} eventDate   - ISO date string (may be empty)
- * @param {Array}  people      - [{name, paid, consumed, net}]
- * @param {Array|null} expenses - trip expenses or null for simple mode
- */
-function buildFullWaMsg(txns, total, eventName, eventDate, people, expenses) {
+function buildFullWaMsg(txns, total, eventName, eventDate, people, expenses, behalfMap) {
   const SEP = '----------------------------';
   const lines = [];
 
@@ -705,6 +764,17 @@ function buildFullWaMsg(txns, total, eventName, eventDate, people, expenses) {
   lines.push(`*${eventName}*`);
   if (eventDate) lines.push(`Date: ${fmtDate(eventDate)}`);
   lines.push(`Total Bill: *${fmt(total)}*`);
+
+  // ── Behalf note ──────────────────────────────────────
+  if (behalfMap && behalfMap.size > 0) {
+    const grouped = new Map();
+    behalfMap.forEach((payer, covered) => {
+      if (!grouped.has(payer)) grouped.set(payer, []);
+      grouped.get(payer).push(covered);
+    });
+    lines.push(``);
+    lines.push(`_Note: ${[...grouped.entries()].map(([payer, covList]) => `${payer} is covering the share of ${covList.join(' & ')}`).join('; ')}_`);
+  }
 
   // ── Section 1: Expense Breakdown (Trip mode only) ────
   if (expenses && expenses.length > 0) {
@@ -950,14 +1020,18 @@ function startTrip() {
 
 function t_reset() {
   t_members = []; t_expCount = 0;
+  t_behalfRows = []; t_behalfCount = 0;
   document.getElementById('t-member-tags').innerHTML = '';
   document.getElementById('t-member-input').value   = '';
   document.getElementById('t-expense-list').innerHTML = '';
+  document.getElementById('t-behalf-list').innerHTML  = '';
   document.getElementById('t-event-name').value  = '';
   document.getElementById('t-event-start').value = '';
   document.getElementById('t-event-end').value   = '';
   document.getElementById('t-p1-alert').classList.remove('show');
   document.getElementById('t-p2-alert').classList.remove('show');
+  const btn = document.getElementById('t-behalf-add-btn');
+  if (btn) btn.style.display = 'none';
 }
 
 /* ─── Members ─── */
@@ -969,6 +1043,7 @@ function t_addMember() {
   t_members.push(name);
   inp.value = '';
   t_renderMemberTags();
+  t_syncBehalfUI();
   // Refresh all expense share grids to include the new member
   document.querySelectorAll('.expense-card').forEach(c => {
     const id = c.id.replace('exp-','');
@@ -979,7 +1054,16 @@ function t_addMember() {
 
 function t_removeMember(name) {
   t_members = t_members.filter(m => m !== name);
+  // Also clean up any behalf rows referencing this member
+  t_behalfRows = t_behalfRows.filter(r => r.payer !== name);
+  t_behalfRows.forEach(r => { r.covering = r.covering.filter(m => m !== name); });
+  // Remove empty behalf rows
+  t_behalfRows.filter(r => r.covering.length === 0).forEach(r => {
+    document.getElementById(`behalf-row-${r.id}`)?.remove();
+  });
+  t_behalfRows = t_behalfRows.filter(r => r.covering.length > 0);
   t_renderMemberTags();
+  t_syncBehalfUI();
   document.querySelectorAll('.expense-card').forEach(c => {
     const id = c.id.replace('exp-','');
     t_rebuildShareGrid(id);
@@ -1215,6 +1299,192 @@ function t_checkNone(id) {
   });
 }
 
+/* ─── "Paying on behalf of" state & UI ───────────────────
+   t_behalfRows: array of { id, payer, covering[] }
+   One row = one payer covering one or more people.
+   Multiple rows allowed (e.g. A covers B; C covers D and E).
+────────────────────────────────────────────────────────── */
+
+let t_behalfRows = [];
+let t_behalfCount = 0;
+
+/**
+ * Called whenever members change — shows/hides the "Add arrangement"
+ * button and rebuilds all payer dropdowns with fresh member lists.
+ */
+function t_syncBehalfUI() {
+  const btn = document.getElementById('t-behalf-add-btn');
+  if (btn) btn.style.display = t_members.length >= 2 ? 'flex' : 'none';
+
+  // Rebuild each row's payer dropdown with current members
+  t_behalfRows.forEach(row => t_renderBehalfRow(row.id));
+}
+
+/** Add a new blank behalf row */
+function t_addBehalfRow() {
+  t_behalfCount++;
+  const row = { id: t_behalfCount, payer: t_members[0] || '', covering: [] };
+  t_behalfRows.push(row);
+  t_renderBehalfRow(row.id);
+}
+
+/** Render / re-render a single behalf row into the DOM */
+function t_renderBehalfRow(id) {
+  const row = t_behalfRows.find(r => r.id === id);
+  if (!row) return;
+
+  const listEl = document.getElementById('t-behalf-list');
+  let el = document.getElementById(`behalf-row-${id}`);
+  if (!el) {
+    el = document.createElement('div');
+    el.className = 'behalf-row';
+    el.id = `behalf-row-${id}`;
+    listEl.appendChild(el);
+  }
+
+  // Available people to cover = members not already covering someone
+  // and not the payer themselves
+  const payerOpts = t_members
+    .map(m => `<option value="${esc(m)}" ${m === row.payer ? 'selected' : ''}>${esc(m)}</option>`)
+    .join('');
+
+  // Chips for currently covered people
+  const coveredChips = row.covering.map(name => `
+    <span class="behalf-covered-chip">
+      ${esc(name)}
+      <span class="chip-x" onclick="t_removeCovered(${id},'${esc(name)}')">&times;</span>
+    </span>`).join('');
+
+  // "Add person" button — only available members not already covered and not the payer
+  const alreadyCovered = new Set(t_behalfRows.flatMap(r => r.covering));
+  const available = t_members.filter(m => m !== row.payer && !row.covering.includes(m));
+  const addBtn = available.length > 0
+    ? `<button class="behalf-add-covered" onclick="t_pickCovered(${id})">+ Add person</button>`
+    : '';
+
+  el.innerHTML = `
+    <div class="behalf-row-header">
+      <select class="behalf-payer-select" onchange="t_setBehalfPayer(${id}, this.value)">
+        ${payerOpts}
+      </select>
+      <span style="font-size:.78rem;font-weight:700;color:var(--muted);white-space:nowrap;">covers</span>
+      <button class="btn-remove" onclick="t_removeBehalfRow(${id})">&#x2715;</button>
+    </div>
+    <div class="behalf-covers-label">Covering the share of:</div>
+    <div class="behalf-covered-chips">
+      ${coveredChips}
+      ${addBtn}
+    </div>`;
+}
+
+/** Change the payer on a row */
+function t_setBehalfPayer(id, name) {
+  const row = t_behalfRows.find(r => r.id === id);
+  if (!row) return;
+  row.payer = name;
+  // Remove payer from their own covered list if accidentally there
+  row.covering = row.covering.filter(m => m !== name);
+  t_renderBehalfRow(id);
+}
+
+/** Remove a covered person chip */
+function t_removeCovered(id, name) {
+  const row = t_behalfRows.find(r => r.id === id);
+  if (!row) return;
+  row.covering = row.covering.filter(m => m !== name);
+  t_renderBehalfRow(id);
+}
+
+/** Remove an entire behalf row */
+function t_removeBehalfRow(id) {
+  t_behalfRows = t_behalfRows.filter(r => r.id !== id);
+  document.getElementById(`behalf-row-${id}`)?.remove();
+}
+
+/**
+ * Show a mini bottom-sheet style picker to choose who to cover.
+ * Uses a simple prompt-style popover attached inline for mobile friendliness.
+ */
+function t_pickCovered(rowId) {
+  const row = t_behalfRows.find(r => r.id === rowId);
+  if (!row) return;
+
+  // Members available: not the payer, not already covered by this row,
+  // not already being covered by ANY row (one person can only be covered once)
+  const allCovered = new Set(t_behalfRows.flatMap(r => r.covering));
+  const available  = t_members.filter(m => m !== row.payer && !row.covering.includes(m) && !allCovered.has(m));
+  if (!available.length) return;
+
+  // Build a small inline picker dropdown right after the chips
+  // Remove any existing picker first
+  document.querySelectorAll('.behalf-picker').forEach(p => p.remove());
+
+  const el = document.getElementById(`behalf-row-${rowId}`);
+  const picker = document.createElement('div');
+  picker.className = 'behalf-picker';
+  picker.style.cssText = 'position:relative;margin-top:8px;';
+
+  const list = document.createElement('div');
+  list.style.cssText = `
+    background:var(--surface); border:1.5px solid var(--border);
+    border-radius:var(--r-sm); box-shadow:var(--sh-md);
+    overflow:hidden; margin-top:4px;`;
+
+  available.forEach(name => {
+    const opt = document.createElement('div');
+    opt.style.cssText = 'padding:10px 14px; font-size:.86rem; font-weight:600; cursor:pointer; border-bottom:1px solid var(--border);';
+    opt.textContent = name;
+    opt.onmouseenter = () => opt.style.background = 'var(--bg)';
+    opt.onmouseleave = () => opt.style.background = '';
+    opt.onclick = () => {
+      row.covering.push(name);
+      picker.remove();
+      t_renderBehalfRow(rowId);
+    };
+    list.appendChild(opt);
+  });
+
+  // Cancel option
+  const cancel = document.createElement('div');
+  cancel.style.cssText = 'padding:9px 14px; font-size:.82rem; color:var(--muted); cursor:pointer; text-align:center; font-weight:600;';
+  cancel.textContent = 'Cancel';
+  cancel.onclick = () => picker.remove();
+  list.appendChild(cancel);
+
+  picker.appendChild(list);
+  el.appendChild(picker);
+
+  // Close if tapping outside
+  setTimeout(() => {
+    document.addEventListener('click', function handler(e) {
+      if (!picker.contains(e.target)) { picker.remove(); document.removeEventListener('click', handler); }
+    });
+  }, 10);
+}
+
+/** Read all behalf arrangements into a clean map: Map<coveredName, payerName> */
+function t_getBehalfMap() {
+  // covered → payer  (who is responsible for their share)
+  const map = new Map();
+  t_behalfRows.forEach(row => {
+    row.covering.forEach(covered => {
+      map.set(covered, row.payer);
+    });
+  });
+  return map;
+}
+
+/** Validate behalf rows — no circular coverage, no self-coverage */
+function t_validateBehalf() {
+  const behalfMap = t_getBehalfMap();
+  for (const [covered, payer] of behalfMap) {
+    if (covered === payer) return `${covered} cannot cover themselves.`;
+    // Check payer isn't also being covered
+    if (behalfMap.has(payer)) return `${payer} is both covering someone and being covered — this creates a conflict.`;
+  }
+  return null;
+}
+
 /* ─── Live bar for trip mode ─── */
 function t_refreshBar() {
   const cards = document.querySelectorAll('#t-expense-list .expense-card');
@@ -1264,12 +1534,16 @@ function t_calculate() {
   const errEl = document.getElementById('t-p2-alert');
   errEl.classList.remove('show');
 
+  // Validate behalf arrangements first
+  const behalfErr = t_validateBehalf();
+  if (behalfErr) { errEl.innerHTML = behalfErr; errEl.classList.add('show'); return; }
+
   const expenses = t_getExpenses();
   if (!expenses || expenses.length === 0) {
     errEl.innerHTML = 'Add at least one expense with an amount.'; errEl.classList.add('show'); return;
   }
 
-  // Build per-member paid and consumed maps
+  // ── Step 1: Build raw paid & consumed per member ──────
   const paid     = {};
   const consumed = {};
   t_members.forEach(m => { paid[m] = 0; consumed[m] = 0; });
@@ -1277,27 +1551,47 @@ function t_calculate() {
   expenses.forEach(exp => {
     paid[exp.payer] = round2((paid[exp.payer]||0) + exp.amt);
     if (exp.sharedBy.length > 0) {
-      const share = round2(exp.amt / exp.sharedBy.length);
-      // Distribute remainder to first member
+      const share     = round2(exp.amt / exp.sharedBy.length);
       const remainder = round2(exp.amt - share * exp.sharedBy.length);
       exp.sharedBy.forEach((m, i) => {
-        consumed[m] = round2((consumed[m]||0) + share + (i===0 ? remainder : 0));
+        consumed[m] = round2((consumed[m]||0) + share + (i === 0 ? remainder : 0));
       });
     }
   });
 
-  const people = t_members.map(name => ({
-    name,
-    paid:     round2(paid[name]||0),
-    consumed: round2(consumed[name]||0),
-    net:      round2((paid[name]||0) - (consumed[name]||0))
-  }));
+  // ── Step 2: Apply "paying on behalf of" ──────────────
+  // behalfMap: covered → payer
+  const behalfMap = t_getBehalfMap();
+  const covered   = new Set(behalfMap.keys());
 
-  const totalPaid = round2(people.reduce((s,p)=>s+p.paid,0));
-  t_renderResults(people, totalPaid, expenses);
+  behalfMap.forEach((payer, coveredMember) => {
+    // Merge covered member's consumed into their payer's consumed
+    consumed[payer] = round2((consumed[payer]||0) + (consumed[coveredMember]||0));
+    // If the covered member paid anything themselves, treat it as paid by the payer
+    // (edge case: covered member might have paid a bill — merge that too)
+    paid[payer] = round2((paid[payer]||0) + (paid[coveredMember]||0));
+    // Zero out the covered member so they vanish from settlement
+    consumed[coveredMember] = 0;
+    paid[coveredMember]     = 0;
+  });
+
+  // ── Step 3: Build people array — exclude covered members ──
+  const activePeople = t_members
+    .filter(m => !covered.has(m))
+    .map(name => ({
+      name,
+      paid:     round2(paid[name]||0),
+      consumed: round2(consumed[name]||0),
+      net:      round2((paid[name]||0) - (consumed[name]||0))
+    }));
+
+  const totalPaid = round2(t_members.reduce((s, m) => s + (paid[m]||0), 0));
+
+  // Pass behalfMap into render so results and WA message can note the arrangements
+  t_renderResults(activePeople, totalPaid, expenses, behalfMap);
 }
 
-function t_renderResults(people, totalPaid, expenses) {
+function t_renderResults(people, totalPaid, expenses, behalfMap) {
   const tripName  = document.getElementById('t-event-name').value.trim() || 'Trip';
   const startDate = document.getElementById('t-event-start').value;
   const endDate   = document.getElementById('t-event-end').value;
@@ -1325,13 +1619,32 @@ function t_renderResults(people, totalPaid, expenses) {
     breakdownEl.appendChild(row);
   });
 
+  // If there are behalf arrangements, show a note below the breakdown
+  if (behalfMap && behalfMap.size > 0) {
+    // Group: payer → [covered...]
+    const grouped = new Map();
+    behalfMap.forEach((payer, covered) => {
+      if (!grouped.has(payer)) grouped.set(payer, []);
+      grouped.get(payer).push(covered);
+    });
+    const noteEl = document.createElement('div');
+    noteEl.style.cssText = 'margin-top:10px;padding:10px 14px;background:var(--green-bg);border:1.5px solid #A8D5B8;border-radius:var(--r-sm);font-size:.8rem;color:var(--green);line-height:1.6;';
+    const lines = [];
+    grouped.forEach((coveredList, payer) => {
+      lines.push(`<strong>${esc(payer)}</strong> is covering the share of <strong>${coveredList.map(esc).join(', ')}</strong>`);
+    });
+    noteEl.innerHTML = lines.join('<br>');
+    breakdownEl.appendChild(noteEl);
+  }
+
   renderResults({
     people, totalPaid, eventName:tripName, eventMeta:meta,
     summaryListId:'t-summary-list', statsBarId:'t-stats-bar',
     txnListId:'t-txn-list', shareSecId:'t-share-section',
     resNameId:'t-res-name', resMetaId:'t-res-meta',
     waEventName:tripName, waEventDate:startDate,
-    expenses   // Pass full expense list for the breakdown section in WA message
+    expenses,
+    behalfMap
   });
   showPage('trip-p3');
 }
